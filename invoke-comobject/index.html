@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Invoke-ComObject - Power$nippets</title>
+<meta name="description" content="Boost your shell with reusable code stripped to its essentials">
+<meta name="generator" content="Hugo 0.72.0" />
+<link rel="shortcut icon" href="/images/favicons/favicon.ico">
+<link href="https://powersnippets.com//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://powersnippets.com/invoke-comobject/">
+<link rel="stylesheet" href="https://powersnippets.com/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://powersnippets.com/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://powersnippets.com/js/bundle.js"></script>
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet">
+<style>
+:root {--custom-font-color: #f4f4f4;--custom-background-color: #012345;}
+</style>
+<meta property="og:title" content="Invoke-ComObject" />
+<meta property="og:description" content="Boost your shell with reusable code stripped to its essentials" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://powersnippets.com/invoke-comobject/" />
+<meta property="og:updated_time" content="2020-06-29T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Invoke-ComObject"/>
+<meta name="twitter:description" content="Boost your shell with reusable code stripped to its essentials"/>
+<meta itemprop="name" content="Invoke-ComObject">
+<meta itemprop="description" content="Boost your shell with reusable code stripped to its essentials">
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet"></head>
+<body><div class="container"><header>
+<h1>Power$nippets</h1>
+
+<p class="description">Boost your shell with reusable code stripped to its essentials</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Invoke-ComObject</h1><p>Component Object Model (<strong>COM</strong>) is the basis for several other Microsoft technologies and frameworks, including <a href="https://en.wikipedia.org/wiki/Object_Linking_and_Embedding" title="Object Linking and Embedding">OLE</a>, <a href="https://en.wikipedia.org/wiki/OLE_Automation" title="OLE Automation">OLE Automation</a>, <a href="https://en.wikipedia.org/wiki/Browser_Helper_Object" title="Browser Helper Object">Browser Helper Object</a>, <a href="https://en.wikipedia.org/wiki/ActiveX" title="ActiveX">ActiveX</a>, <a href="https://en.wikipedia.org/wiki/COM%2B" title="COM+">COM+</a>, <a href="https://en.wikipedia.org/wiki/Distributed_Component_Object_Model" title="Distributed Component Object Model">DCOM</a>, the <a href="https://en.wikipedia.org/wiki/Windows_shell" title="Windows shell">Windows shell</a>, <a href="https://en.wikipedia.org/wiki/DirectX" title="DirectX">DirectX</a>, <a href="https://en.wikipedia.org/wiki/UMDF" title="UMDF">UMDF</a> and <a href="https://en.wikipedia.org/wiki/Windows_Runtime" title="Windows Runtime">Windows Runtime</a>. ComObjects can be created with the  <a href="https://docs.microsoft.com/powershell/scripting/getting-started/cookbooks/creating-.net-and-com-objects--new-object-?view=powershell-5.1/#creating-com-objects-with-new-object"><code>New-Object</code></a> cmdlet but the problem is that the input and output are provider through the arguments which makes it difficult pipe or assign values the normal way.</p>
+<p>Therefor this little  <code>Invoke-ComObject</code>  wrapper that takes away some overhead and has a more common PowerShell interface.</p>
+<h3 id="cmdlet">Cmdlet</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f;font-weight:bold">Function</span> <span style="color:#a2f">Invoke-ComObject</span> {                                     <span style="color:#080;font-style:italic"># https://powersnippets.com/invoke-comobject/</span>
+    [<span style="color:#a2f;font-weight:bold">CmdletBinding</span>()]<span style="color:#a2f;font-weight:bold">Param</span> (                                    <span style="color:#080;font-style:italic"># Version 01.01.00, by iRon1</span>
+        [<span style="color:#a2f;font-weight:bold">Parameter</span>(<span style="color:#a2f;font-weight:bold">Mandatory</span> = <span style="color:#b8860b">$true</span>)]<span style="color:#b8860b">$ComObject</span>, <span style="color:#800">[Switch]</span><span style="color:#b8860b">$Method</span>, [<span style="color:#a2f;font-weight:bold">Parameter</span>(<span style="color:#a2f;font-weight:bold">Mandatory</span> = <span style="color:#b8860b">$true</span>)]<span style="color:#800">[String]</span><span style="color:#b8860b">$Name</span>, <span style="color:#b8860b">$Value</span>
+    )
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$ComObject</span> <span style="color:#666">-IsNot</span> <span style="color:#b44">&#34;__ComObject&#34;</span>) {
+        <span style="color:#a2f;font-weight:bold">If</span> (!<span style="color:#b8860b">$ComInvoke</span>) {<span style="color:#b8860b">$Global:ComInvoke</span> = @{}}
+        <span style="color:#a2f;font-weight:bold">If</span> (!<span style="color:#b8860b">$ComInvoke</span>.<span style="color:#b8860b">$ComObject</span>) {<span style="color:#b8860b">$ComInvoke</span>.<span style="color:#b8860b">$ComObject</span> = <span style="color:#a2f">New-Object</span> -ComObject <span style="color:#b8860b">$ComObject</span>}
+        <span style="color:#b8860b">$ComObject</span> = <span style="color:#b8860b">$ComInvoke</span>.<span style="color:#b8860b">$ComObject</span>
+    }
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Method</span>) {<span style="color:#b8860b">$Invoke</span> = <span style="color:#b44">&#34;InvokeMethod&#34;</span>} <span style="color:#a2f;font-weight:bold">ElseIf</span> (<span style="color:#b8860b">$MyInvocation</span>.BoundParameters.ContainsKey(<span style="color:#b44">&#34;Value&#34;</span>)) {<span style="color:#b8860b">$Invoke</span> = <span style="color:#b44">&#34;SetProperty&#34;</span>} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$Invoke</span> = <span style="color:#b44">&#34;GetProperty&#34;</span>}
+    <span style="color:#800">[__ComObject]</span>.InvokeMember(<span style="color:#b8860b">$Name</span>, <span style="color:#b8860b">$Invoke</span>, <span style="color:#b8860b">$Null</span>, <span style="color:#b8860b">$ComObject</span>, <span style="color:#b8860b">$Value</span>)
+}; <span style="color:#a2f">Set-Alias</span> Com <span style="color:#a2f">Invoke-ComObject</span>
+</code></pre></div><h3 id="syntax">Syntax</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">Invoke-ComObject</span>  [-ComObject]  &lt;ComObject|String&gt;  [-Method]  [-Name]  &lt;string&gt;  [[-Value]  &lt;Object&gt;]
+</code></pre></div><h3 id="parameters">Parameters</h3>
+<p><strong><code>[-ComObject] &lt;  ComObject|String&gt;</code></strong><br>
+If the supplied argument is a  <code>ComObject</code>, the concerned  <code>ComObject</code>  will be (re)used. If the supplied argument is a  <code>String</code>, a new <code>ComObject</code>  will be created unless a copy of the concerned <code>ComObject</code>  already exist, the original  <code>ComObject</code> will be (re)used.</p>
+<p><strong><code>[-Method]</code></strong><br>
+If supplied, the ComObject will be invoked as a method (<code>InvokeMethod</code>). If omitted, the cmdlet will automatically determine whether the property needs to be get (<code>GetProperty</code>) or set (<code>SetProperty</code>) depending on whether a  <code>-Value</code> argument is supplied.</p>
+<p><strong><code>[-Name] &lt;string&gt;</code></strong></p>
+<ul>
+<li>In case the  <code>-Method</code>  switch is supplied, the name of the method (<code>InvokeMethod</code>).</li>
+<li>In case a  <code>-Value</code> argument is supplied, the name of the property to be set (<code>SetProperty</code>).</li>
+<li>In case both the <code>-Method</code>  switch and the –<code>Value</code> argument are omitted, the property to be get (<code>GetProperty</code>) and returned by the cmdlet.</li>
+</ul>
+<p><strong><code>[[-Value]  &lt;Object&gt;</code>]</strong><br>
+The value to be set (<code>SetProperty</code>) or invoked (<code>InvokeMethod</code>).</p>
+<h3 id="examples">Examples</h3>
+<p>With this cmdlet you do not require the to create the  <code>ComObject</code>  first and retrieve e.g. to get the ComputerName (DN) from  <code>ADSystemInfo</code>  in a simple oneliner:</p>
+<p>Com ADSystemInfo ComputerName</p>
+<p>To do a the same with the  <code>PathName</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$EscapedMode</span> = Com PathName EscapedMode
+Com PathName EscapedMode <span style="color:#b8860b">$ADS_ESCAPEDMODE_ON</span>
+Com Pathname -Method <span style="color:#a2f">Set </span><span style="color:#b44">&#34;CN=Ken Dyer,OU=H/R,DC=fabrikam,DC=com&#34;</span>, <span style="color:#b8860b">$ADS_SETTYPE_DN</span>
+Com Pathname -Method Retrieve <span style="color:#b8860b">$ADS_FORMAT_X500_PARENT</span>
+Com PathName EscapedMode <span style="color:#b8860b">$EscapedMode</span>
+</code></pre></div><p>A name  <code>NameTranslate</code>  example:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">Com -Method NameTranslate Init 1, <span style="color:#b44">&#34;domain.com&#34;</span>
+Com -Method NameTranslate <span style="color:#a2f">Set </span>8, <span style="color:#b44">&#34;User001&#34;</span>
+Com -Method NameTranslate Get 1
+</code></pre></div><p>Or if you do want to have multiple instances you can first create the  <code>ComObject</code>  instance and then supply it to the  <code>Com</code>  function:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$NameTranslate</span> = <span style="color:#a2f">New-Object</span> -ComObject NameTranslate
+Com -Method <span style="color:#b8860b">$NameTranslate</span> Init 1, <span style="color:#b44">&#34;domain.com&#34;</span>
+Com -Method <span style="color:#b8860b">$NameTranslate</span> <span style="color:#a2f">Set </span>8, <span style="color:#b44">&#34;User001&#34;</span>
+Com -Method <span style="color:#b8860b">$NameTranslate</span> Get 1
+</code></pre></div><p>The <a href="https://stackoverflow.com/a/30477959/1701026"><code>Invoke-ComObject</code></a> cmdlet was originally published at <a href="https://stackoverflow.com/a/30477959/1701026">StackOverflow</a></p>
+<div class="edit-meta">
+Last updated on 29 Jun 2020
+
+
+<br>
+Published on 6 Nov 2017
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://powersnippets.com/inline-if-iif/" title="Inline (IIf)"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Inline (IIf)</a>
+<a class="nav nav-next" href="https://powersnippets.com/join-object/" title="Join-Object">Next - Join-Object <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer>
+</footer>
+</main><div class="sidebar">
+
+<nav class="slide-menu">
+<ul>
+<li class=""><a href="https://powersnippets.com/">Home</a></li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertfrom-sourcetable/">ConvertFrom-SourceTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-datatable/">ConvertTo-DataTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-datatable/readme/">Read Me</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-expression/">ConvertTo-Expression<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-expression/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertto-expression/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/convertto-flatobject/">ConvertTo-FlatObject</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/create-string/">Create-String</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/inline-if-iif/">Inline (IIf)</a>
+  
+</li>
+
+<li class="parent active"><a href="https://powersnippets.com/invoke-comobject/">Invoke-ComObject</a>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/join-object/">Join-Object<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/join-object/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/join-object/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/merge-hashtable/">Merge-Hashtable</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/set-formcontrol/">Set-FormControl</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/union-object/">Union-Object</a>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"><h2>WhoAmI</h2>
+<p>
+<img align="left" src="/images/WhoAmI.jpg" alt width="74" height="96" />
+My name is Ronald Bode.<br />
+I am a Windows engineer and developer.
+</p>
+<p>
+Code writing is my hobby and I love riddles. Currently I am most active with PowerShell programming, RPA (UiPath) and creating webpages.
+</p>
+<a href="https://www.linkedin.com/in/ronald-bode-4a1156124/"><img src="/images/icons/linkedin.png" width="16" />LinkedIn</a>
+<a href="https://stackoverflow.com/users/1701026/iron/"><img src="/images/icons/stackoverflow.png" width="16" />StackOverflow</a>
+<a href="https://github.com/iRon7/"><img src="/images/icons/github.png" width="16" />GitHub</a></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

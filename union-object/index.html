@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Union-Object - Power$nippets</title>
+<meta name="description" content="Boost your shell with reusable code stripped to its essentials">
+<meta name="generator" content="Hugo 0.72.0" />
+<link rel="shortcut icon" href="/images/favicons/favicon.ico">
+<link href="https://powersnippets.com//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://powersnippets.com/union-object/">
+<link rel="stylesheet" href="https://powersnippets.com/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://powersnippets.com/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://powersnippets.com/js/bundle.js"></script>
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet">
+<style>
+:root {--custom-font-color: #f4f4f4;--custom-background-color: #012345;}
+</style>
+<meta property="og:title" content="Union-Object" />
+<meta property="og:description" content="Boost your shell with reusable code stripped to its essentials" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://powersnippets.com/union-object/" />
+<meta property="og:updated_time" content="2020-06-29T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Union-Object"/>
+<meta name="twitter:description" content="Boost your shell with reusable code stripped to its essentials"/>
+<meta itemprop="name" content="Union-Object">
+<meta itemprop="description" content="Boost your shell with reusable code stripped to its essentials">
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet"></head>
+<body><div class="container"><header>
+<h1>Power$nippets</h1>
+
+<p class="description">Boost your shell with reusable code stripped to its essentials</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Union-Object</h1><p>Most native PowerShell cmdlets that handle an array of objects (like e.g. <a href="https://technet.microsoft.com/library/ee176825.aspx"><code>Export-CSV</code></a>) only look to the first object to define the concerned properties. This behavior can lead to unexpected results. Consider the following object:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$List</span> = @(
+    <span style="color:#a2f">New-Object</span> PSObject -Property @{Id = 2}
+    <span style="color:#a2f">New-Object</span> PSObject -Property @{Id = 1}
+    <span style="color:#a2f">New-Object</span> PSObject -Property @{Id = 3; Name = <span style="color:#b44">&#34;Test&#34;</span>}
+)
+</code></pre></div><p>If you simply display this object array, only the  <code>Id</code> property will be listed:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">PS </span>C:\&gt; <span style="color:#b8860b">$List</span>
+ 
+Id
+--
+ 2
+ 1
+ 3
+</code></pre></div><p>You might quickly fix this by aligning the properties of the first object with the rest of the objects (<code>Name = $Null</code>):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$List</span> = @(
+    <span style="color:#a2f">New-Object</span> PSObject -Property @{Id = 2; Name = <span style="color:#b8860b">$Null</span>}
+    <span style="color:#a2f">New-Object</span> PSObject -Property @{Id = 1}
+    <span style="color:#a2f">New-Object</span> PSObject -Property @{Id = 3; Name = <span style="color:#b44">&#34;Test&#34;</span>}
+)
+</code></pre></div><p>This will work for most of the cases:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">PS </span>C:\&gt; <span style="color:#b8860b">$List</span>
+ 
+Id Name
+-- ----
+ 2
+ 1
+ 3 Test
+</code></pre></div><p>But not in every case:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">PS </span>C:\&gt; <span style="color:#b8860b">$List</span> | <span style="color:#a2f">Sort </span>Id
+ 
+Id
+--
+ 1
+ 2
+ 3
+</code></pre></div><p>In other words, it is required to align every object in de array to prevent that you lose any properties. The quickest way is to use the  <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/select-object?view=powershell-5.1"><code>Select-Object</code></a> cmdlet:  <code>Select-Object Id, Name</code>, knowing that just selecting all objects: <code>Select-Object *</code>, doesn’t resolve the issue. This mean that it is still required to iterate through all the objects to define all the properties.</p>
+<h3 id="cmdlet">Cmdlet</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f;font-weight:bold">Function</span> Union-Object (<span style="color:#800">[String[]]</span><span style="color:#b8860b">$Property</span> = @()) {             <span style="color:#080;font-style:italic"># https://powersnippets.com/union-object/</span>
+    <span style="color:#b8860b">$Objects</span> = <span style="color:#b8860b">$Input</span> | <span style="color:#a2f;font-weight:bold">ForEach</span> {<span style="color:#b8860b">$_</span>}                            <span style="color:#080;font-style:italic"># Version 02.00.01, by iRon</span>
+    <span style="color:#a2f;font-weight:bold">If</span> (!<span style="color:#b8860b">$Property</span>) {<span style="color:#a2f;font-weight:bold">ForEach</span> (<span style="color:#b8860b">$Object</span> <span style="color:#a2f;font-weight:bold">in</span> <span style="color:#b8860b">$Objects</span>) {<span style="color:#b8860b">$Property</span> += <span style="color:#b8860b">$Object</span>.PSObject.Properties | <span style="color:#a2f">Select </span>-Expand Name}}
+    <span style="color:#b8860b">$Objects</span> | <span style="color:#a2f">Select </span>(<span style="color:#800">[String[]]</span>(<span style="color:#b8860b">$Property</span> | <span style="color:#a2f">Select </span>-Unique))
+} <span style="color:#a2f">Set-Alias</span> Union Union-Object
+</code></pre></div><h3 id="syntax">Syntax</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">&lt;Object[]&gt; | Union-Object [[-Property] &lt;String[]&gt;]
+</code></pre></div><h3 id="parameters">Parameters</h3>
+<p><strong><code>[-Property] &lt;String[]&gt;</code></strong>
+Redefines the properties, if omitted all objects will be scanned to define the common properties.</p>
+<h3 id="example">Example:</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$list</span> | Union-Object | <span style="color:#a2f">Export-Csv</span>
+</code></pre></div><p>The <a href="https://stackoverflow.com/a/44429084/1701026"><code>Union-Object</code></a> cmdlet was originally published at <a href="https://stackoverflow.com/a/44429084/1701026">StackOverflow</a></p>
+<div class="edit-meta">
+Last updated on 29 Jun 2020
+
+
+<br>
+Published on 6 Nov 2017
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://powersnippets.com/set-formcontrol/" title="Set-FormControl"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Set-FormControl</a>
+<a class="nav nav-next" href="https://powersnippets.com/convertfrom-sourcetable/" title="ConvertFrom-SourceTable">Next - ConvertFrom-SourceTable <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer>
+</footer>
+</main><div class="sidebar">
+
+<nav class="slide-menu">
+<ul>
+<li class=""><a href="https://powersnippets.com/">Home</a></li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertfrom-sourcetable/">ConvertFrom-SourceTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-datatable/">ConvertTo-DataTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-datatable/readme/">Read Me</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-expression/">ConvertTo-Expression<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-expression/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertto-expression/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/convertto-flatobject/">ConvertTo-FlatObject</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/create-string/">Create-String</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/inline-if-iif/">Inline (IIf)</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/invoke-comobject/">Invoke-ComObject</a>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/join-object/">Join-Object<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/join-object/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/join-object/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/merge-hashtable/">Merge-Hashtable</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/set-formcontrol/">Set-FormControl</a>
+  
+</li>
+
+<li class="parent active"><a href="https://powersnippets.com/union-object/">Union-Object</a>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"><h2>WhoAmI</h2>
+<p>
+<img align="left" src="/images/WhoAmI.jpg" alt width="74" height="96" />
+My name is Ronald Bode.<br />
+I am a Windows engineer and developer.
+</p>
+<p>
+Code writing is my hobby and I love riddles. Currently I am most active with PowerShell programming, RPA (UiPath) and creating webpages.
+</p>
+<a href="https://www.linkedin.com/in/ronald-bode-4a1156124/"><img src="/images/icons/linkedin.png" width="16" />LinkedIn</a>
+<a href="https://stackoverflow.com/users/1701026/iron/"><img src="/images/icons/stackoverflow.png" width="16" />StackOverflow</a>
+<a href="https://github.com/iRon7/"><img src="/images/icons/github.png" width="16" />GitHub</a></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

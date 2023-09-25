@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Set-FormControl - Power$nippets</title>
+<meta name="description" content="Boost your shell with reusable code stripped to its essentials">
+<meta name="generator" content="Hugo 0.72.0" />
+<link rel="shortcut icon" href="/images/favicons/favicon.ico">
+<link href="https://powersnippets.com//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://powersnippets.com/set-formcontrol/">
+<link rel="stylesheet" href="https://powersnippets.com/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://powersnippets.com/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://powersnippets.com/js/bundle.js"></script>
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet">
+<style>
+:root {--custom-font-color: #f4f4f4;--custom-background-color: #012345;}
+</style>
+<meta property="og:title" content="Set-FormControl" />
+<meta property="og:description" content="Boost your shell with reusable code stripped to its essentials" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://powersnippets.com/set-formcontrol/" />
+<meta property="og:updated_time" content="2020-06-29T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Set-FormControl"/>
+<meta name="twitter:description" content="Boost your shell with reusable code stripped to its essentials"/>
+<meta itemprop="name" content="Set-FormControl">
+<meta itemprop="description" content="Boost your shell with reusable code stripped to its essentials">
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet"></head>
+<body><div class="container"><header>
+<h1>Power$nippets</h1>
+
+<p class="description">Boost your shell with reusable code stripped to its essentials</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Set-FormControl</h1><p>In PowerShell it is quiet common to use Windows Forms to build a User Interface for small cmdlets but the syntaxis required for this are far from  <a href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY (don’t repeat yourself) programming</a>.</p>
+<p>In a lot of cases it not required to created any functions to make your code less verbose, take e.g. the lengthy WinForms PowerShell script here. Code pieces like this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$System_Windows_Forms_Padding</span> = <span style="color:#a2f">New-Object</span> System.Windows.Forms.Padding
+<span style="color:#b8860b">$System_Windows_Forms_Padding</span>.All = 3
+<span style="color:#b8860b">$System_Windows_Forms_Padding</span>.Bottom = 3
+<span style="color:#b8860b">$System_Windows_Forms_Padding</span>.Left = 3
+<span style="color:#b8860b">$System_Windows_Forms_Padding</span>.Right = 3
+<span style="color:#b8860b">$System_Windows_Forms_Padding</span>.Top = 3
+<span style="color:#b8860b">$Tab1</span>.Padding = <span style="color:#b8860b">$System_Windows_Forms_Padding</span>
+</code></pre></div><p>Can easily be simplified in WinForms to a single line:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$Tab1</span>.Padding  =  3
+</code></pre></div><p>And if the padding would be different for each side, PowerShell will automatically convert:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$Tab1</span>.Padding  =  <span style="color:#b44">&#34;4, 6, 4, 6&#34;</span>
+</code></pre></div><blockquote>
+<p>Note that PowerShell does not convert  <code>$Tab1.Padding = &quot;3&quot;</code>  or  <code>$Tab1.Padding = &quot;4, 6&quot;</code></p>
+</blockquote>
+<p>Nevertheless, the native way to create a windows form control is quiet lengthy and although (multiple) properties can be added at creation (using:  <code>New-Object System.Windows.Forms.Button -Property @{Location = &quot;75, 120&quot;; Size = &quot;75, 23&quot;}</code>) , multiple properties can’t be set right away at a later state. Above that, there isn’t a quick and easy way to add events*1, child controls and container properties (as e.g.  <code>RowSpan</code>), or any combination, intermediately at creation of a windows form control.</p>
+<p>Bottom line, you have to reference the windows form control over and over again to set its properties and more with e.g.  <code>$OKButton.&lt;property&gt; = ...</code>  as in this example :</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$OKButton</span> = <span style="color:#a2f">New-Object</span> System.Windows.Forms.Button
+<span style="color:#b8860b">$OKButton</span>.Location = <span style="color:#a2f">New-Object</span> System.Drawing.Point(75,120)
+<span style="color:#b8860b">$OKButton</span>.Size = <span style="color:#a2f">New-Object</span> System.Drawing.Size(75,23)
+<span style="color:#b8860b">$OKButton</span>.Text = <span style="color:#b44">&#34;OK&#34;</span>
+</code></pre></div><p>That’s why I have created a reusable PowerShell Form Control wrapper that let’s you minimize Windows Forms (WinForms) code to it’s essence.</p>
+<p>*1 unless you use  <code>On&lt;event&gt;</code>  methods, see also:  <a href="https://stackoverflow.com/questions/6348494/addeventlistener-vs-onclick">addEventListener vs onclick</a></p>
+<h3 id="cmdlet">Cmdlet</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">Add-Type</span> -AssemblyName System.Windows.Forms
+ 
+<span style="color:#a2f;font-weight:bold">Function</span> <span style="color:#a2f">Set-FormControl</span> {
+    [<span style="color:#a2f;font-weight:bold">CmdletBinding</span>(DefaultParametersetName=<span style="color:#b44">&#39;Self&#39;</span>)]<span style="color:#a2f;font-weight:bold">param</span>(
+        [<span style="color:#a2f;font-weight:bold">Parameter</span>(<span style="color:#a2f;font-weight:bold">Position</span> = 0)]<span style="color:#b8860b">$Control</span> = <span style="color:#b44">&#34;Form&#34;</span>,
+        [<span style="color:#a2f;font-weight:bold">Parameter</span>(<span style="color:#a2f;font-weight:bold">Position</span> = 1)]<span style="color:#800">[HashTable]</span><span style="color:#b8860b">$Member</span> = @{},
+        [<span style="color:#a2f;font-weight:bold">Parameter</span>(<span style="color:#a2f;font-weight:bold">ParameterSetName</span> = <span style="color:#b44">&#39;AttachChild&#39;</span>,  <span style="color:#a2f;font-weight:bold">Mandatory</span> = <span style="color:#b8860b">$false</span>)]<span style="color:#800">[Windows.Forms.Control[]]</span><span style="color:#b8860b">$Add</span> = @(),
+        [<span style="color:#a2f;font-weight:bold">Parameter</span>(<span style="color:#a2f;font-weight:bold">ParameterSetName</span> = <span style="color:#b44">&#39;AttachParent&#39;</span>, <span style="color:#a2f;font-weight:bold">Mandatory</span> = <span style="color:#b8860b">$false</span>)]<span style="color:#800">[HashTable]</span><span style="color:#b8860b">$Set</span> = @{},
+        [<span style="color:#a2f;font-weight:bold">Parameter</span>(<span style="color:#a2f;font-weight:bold">ParameterSetName</span> = <span style="color:#b44">&#39;AttachParent&#39;</span>, <span style="color:#a2f;font-weight:bold">Mandatory</span> = <span style="color:#b8860b">$false</span>)][<span style="color:#a2f;font-weight:bold">Alias</span>(<span style="color:#b44">&#34;Parent&#34;</span>)]<span style="color:#800">[Switch]</span><span style="color:#b8860b">$GetParent</span>,
+        [<span style="color:#a2f;font-weight:bold">Parameter</span>(<span style="color:#a2f;font-weight:bold">ParameterSetName</span> = <span style="color:#b44">&#39;AttachParent&#39;</span>, <span style="color:#a2f;font-weight:bold">Mandatory</span> = <span style="color:#b8860b">$true</span>, <span style="color:#a2f;font-weight:bold">ValueFromPipeline</span> = <span style="color:#b8860b">$true</span>)]<span style="color:#800">[Windows.Forms.Control]</span><span style="color:#b8860b">$Container</span>
+    )
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Control</span> <span style="color:#666">-isnot</span> <span style="color:#800">[Windows.Forms.Control]</span>) {<span style="color:#a2f;font-weight:bold">Try</span> {<span style="color:#b8860b">$Control</span> = <span style="color:#a2f">New-Object</span> Windows.Forms.<span style="color:#b8860b">$Control</span>} <span style="color:#a2f;font-weight:bold">Catch</span> {<span style="color:#b8860b">$PSCmdlet</span>.WriteError(<span style="color:#b8860b">$_</span>)}}
+    <span style="color:#b8860b">$Styles</span> = @{RowStyles = <span style="color:#b44">&#34;RowStyle&#34;</span>; ColumnStyles = <span style="color:#b44">&#34;ColumnStyle&#34;</span>}
+    <span style="color:#a2f;font-weight:bold">ForEach</span> (<span style="color:#b8860b">$Key</span> <span style="color:#a2f;font-weight:bold">in</span> <span style="color:#b8860b">$Member</span>.Keys) {
+        <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Style</span> = <span style="color:#b8860b">$Styles</span>.<span style="color:#b8860b">$Key</span>) {<span style="color:#800">[Void]</span><span style="color:#b8860b">$Control</span>.<span style="color:#b8860b">$Key</span>.Clear()
+            <span style="color:#a2f;font-weight:bold">For</span> (<span style="color:#b8860b">$i</span> = 0; <span style="color:#b8860b">$i</span> <span style="color:#666">-lt</span> <span style="color:#b8860b">$Member</span>.<span style="color:#b8860b">$Key</span>.Length; <span style="color:#b8860b">$i</span>++) {<span style="color:#800">[Void]</span><span style="color:#b8860b">$Control</span>.<span style="color:#b8860b">$Key</span>.Add((<span style="color:#a2f">New-Object</span> Windows.Forms.<span style="color:#b8860b">$Style</span>(<span style="color:#b8860b">$Member</span>.<span style="color:#b8860b">$Key</span>[<span style="color:#b8860b">$i</span>])))}
+        } <span style="color:#a2f;font-weight:bold">Else</span> {
+            <span style="color:#a2f;font-weight:bold">Switch</span> ((<span style="color:#b8860b">$Control</span> | <span style="color:#a2f">Get-Member</span> <span style="color:#b8860b">$Key</span>).MemberType) {
+                <span style="color:#b44">&#34;Property&#34;</span>	{<span style="color:#b8860b">$Control</span>.<span style="color:#b8860b">$Key</span> = <span style="color:#b8860b">$Member</span>.<span style="color:#b8860b">$Key</span>}
+                <span style="color:#b44">&#34;Method&#34;</span>  	{<span style="color:#a2f">Invoke-Expression</span> <span style="color:#b44">&#34;[Void](</span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">Control.$Key(</span>$(<span style="color:#b8860b">$Member</span>.<span style="color:#b8860b">$Key</span>)<span style="color:#b44">))&#34;</span>}
+                <span style="color:#b44">&#34;Event&#34;</span>   	{<span style="color:#a2f">Invoke-Expression</span> <span style="color:#b44">&#34;</span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">Control.Add_$Key(</span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">Member.</span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">Key)&#34;</span>}
+                <span style="color:#a2f;font-weight:bold">Default</span>   	{<span style="color:#a2f">Write-Error</span>(<span style="color:#b44">&#34;The </span>$(<span style="color:#b8860b">$Control</span>.GetType().Name)<span style="color:#b44"> control doesn&#39;t have a &#39;$Key&#39; member.&#34;</span>)}
+            }
+        }
+    }
+    <span style="color:#b8860b">$Add</span> | <span style="color:#a2f;font-weight:bold">ForEach</span> {<span style="color:#b8860b">$Control</span>.Controls.Add(<span style="color:#b8860b">$_</span>)}
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Container</span>) {<span style="color:#b8860b">$Container</span>.Controls.Add(<span style="color:#b8860b">$Control</span>)}
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Set</span>) {<span style="color:#b8860b">$Set</span>.Keys | <span style="color:#a2f;font-weight:bold">ForEach</span> {<span style="color:#a2f">Invoke-Expression</span> <span style="color:#b44">&#34;</span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">Container.Set$_(</span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">Control, </span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">Set.</span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">_)&#34;</span>}}
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$GetParent</span>) {<span style="color:#b8860b">$Container</span>} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$Control</span>}
+}; <span style="color:#a2f">Set-Alias</span> <span style="color:#a2f">New-FormControl</span> <span style="color:#a2f">Set-FormControl</span>; <span style="color:#a2f">Set-Alias</span> Form <span style="color:#a2f">Set-FormControl</span>
+</code></pre></div><h3 id="syntax">Syntax</h3>
+<p>Creating a control</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">&lt;System.Windows.Forms.Control&gt; = <span style="color:#a2f">New-FormControl</span> [-Control &lt;String&gt;] [-Member &lt;HashTable&gt;]
+</code></pre></div><p>Modifying a control</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">&lt;Void&gt; = <span style="color:#a2f">Set-FormControl</span> [-Control &lt;System.Windows.Forms.Control&gt;] [-Member &lt;HashTable&gt;]
+</code></pre></div><p>Adding a (new) control to a container</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">&lt;System.Windows.Forms.Control&gt; = <span style="color:#a2f">Set-FormControl</span> [-Control &lt;String&gt;|&lt;System.Windows.Forms.Control&gt;] [-Member &lt;HashTable&gt;] [-Add &lt;System.Windows.Forms.Control[]&gt;]
+</code></pre></div><p>Piping a container to a (new) control</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">&lt;System.Windows.Forms.Control&gt; = &lt;System.Windows.Forms.Control&gt; | <span style="color:#a2f">New-FormControl</span> [-Control &lt;String&gt;|&lt;System.Windows.Forms.Control&gt;] [-Member &lt;HashTable&gt;] [-Set &lt;HashTable&gt;] [-PassParent]
+</code></pre></div><blockquote>
+<p>Note that  <code>Set-FormControl</code>  is simply an alias for  <code>New-FormControl</code>, there is no functional difference between the commands. Whether a new form control is created or update, depends object type supplied to the  <code>-Control</code> parameter.</p>
+</blockquote>
+<h3 id="parameters">Parameters</h3>
+<p><strong><code>-Control &lt;String&gt;|&lt;System.Windows.Forms.Control&gt;</code></strong> (position <code>0</code>, default: <code>Form</code>)
+The <code>-Control</code> parameter accepts either a Windows form control type name (<code>[String]</code>) or an existing form control (<code>[System.Windows.Forms.Control]</code> ). Windows form control type names are like <code>Form</code>, <code>Label</code>, <code>TextBox</code>, <code>Button</code>, <code>Panel</code>, etc. If a Windows form control type name (<code>[String]</code>) is supplied, the wrapper will create and return a new Windows form control with properties and settings as defined by the rest of the parameters.
+If an existing Windows form control (<code>[System.Windows.Forms.Control]</code> ) is supplied, the wrapper will update the existing Windows form control using the properties and settings as defined by the rest of the parameters.</p>
+<p><strong><code>-Member &lt;HashTable&gt;</code></strong> (position <code>1</code>)
+Sets property values, invokes methods and add events on a new or existing object.</p>
+<ul>
+<li>If the hash name represents property on the control, e.g. <code>Size = &quot;50, 50&quot;</code>, the value will be assigned to the control property value.</li>
+<li>If the hash name represents method on the control, e.g. <code>Scale = {1.5, 1.5}</code>, the control method will be invoked using the value for arguments .</li>
+<li>If the hash name represents event on the control, take e.g. <code>Click = {$Form.Close()}</code>, the value ( <code>[ScriptBlock]</code>) will be added to the control events.</li>
+</ul>
+<p>Two collection properties, <code>ColumnStyles</code> and <code>RowStyles</code>, are simplified especially for the <code>TableLayoutPanel</code> control which is considered a general substitute for the WPF <code>Grid</code> control: – The <code>ColumnStyles</code> property, clears all column widths and reset them with the ColumnStyle array supplied by the hash value. The <code>RowStyles</code> property, clears all row Heigths and reset them with the RowStyle array supplied by the hash value.</p>
+<blockquote>
+<p>Note: If needto add or insert a single specific <code>ColumnStyle</code> or <code>RowStyle</code> item, you need to fallback on the native statement, as e.g.: <code>[Void]$Control.Control.ColumnStyles.Add((New-Object Windows.Forms.ColumnStyle(&quot;Percent&quot;, 100))</code>.</p>
+</blockquote>
+<p><strong><code>-Add &lt;Array&gt;</code></strong>
+The -Addparameter adds one or more child controls to the current control.</p>
+<blockquote>
+<p>Note: the -add parameter cannot be used if container is piped to the control.</p>
+</blockquote>
+<p><strong><code>-Container &lt;System.Windows.Forms.Control&gt;</code></strong> (from pipeline)
+The parent container is usually provided from the pipeline: <code>$ParentContainer | Form $ChildControl</code> and attached a (new) child control to the concerned container.</p>
+<p><strong><code>-Set &lt;HashTable&gt;</code></strong>
+The <code>-Set</code> parameter sets (<code>SetCellPosition</code>, <code>SetColumn</code>, <code>SetColumnSpan</code>, <code>SetRow</code>, <code>SetRowSpan</code> and <code>SetStyle</code>) the specific child control properties related its parent panel container, e.g. <code>-Set RowSpan = 2</code>.</p>
+<blockquote>
+<p>Note: the <code>-set</code> column – and row parameters can only be used if a container is piped to the control.</p>
+</blockquote>
+<p><strong><code>-GetParent</code></strong>
+By default the (child) control will be returned by the <code>Set-FormControl</code> function unless the <code>-GetParent</code> switch is supplied which will return the parent container instead.</p>
+<blockquote>
+<p>Note: the <code>-GetParent</code>parameter can only be used if a container is piped to the control.</p>
+</blockquote>
+<h3 id="examples">Examples</h3>
+<p>There are two way to setup the Windows Forms hierarchy:</p>
+<ol>
+<li>Adding a (new) control to a container</li>
+<li>Piping a container to a (new) control</li>
+</ol>
+<p><strong>Adding a (new) control to a container</strong></p>
+<p>For this example I have reworked the <a href="https://docs.microsoft.com/powershell/scripting/getting-started/cookbooks/creating-a-custom-input-box?view=powershell-5.1">Creating a Custom Input Box</a> at docs.microsoft.com for using the PowerShell Form Control wrapper:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$TextBox</span>      = Form TextBox @{Location = <span style="color:#b44">&#34;10, 40&#34;</span>;   Size = <span style="color:#b44">&#34;260, 20&#34;</span>}
+<span style="color:#b8860b">$OKButton</span>     = Form Button  @{Location = <span style="color:#b44">&#34;75, 120&#34;</span>;  Size = <span style="color:#b44">&#34;75, 23&#34;</span>; Text = <span style="color:#b44">&#34;OK&#34;</span>;     DialogResult = <span style="color:#b44">&#34;OK&#34;</span>}
+<span style="color:#b8860b">$CancelButton</span> = Form Button  @{Location = <span style="color:#b44">&#34;150, 120&#34;</span>; Size = <span style="color:#b44">&#34;75, 23&#34;</span>; Text = <span style="color:#b44">&#34;Cancel&#34;</span>; DialogResult = <span style="color:#b44">&#34;Cancel&#34;</span>}
+<span style="color:#b8860b">$Result</span> = (<span style="color:#a2f">New-FormControl</span> Form @{
+        Size = <span style="color:#b44">&#34;300, 200&#34;</span>
+        Text = <span style="color:#b44">&#34;Data Entry Form&#34;</span>
+        StartPosition = <span style="color:#b44">&#34;CenterScreen&#34;</span>
+        KeyPreview = <span style="color:#b8860b">$True</span>
+        Topmost = <span style="color:#b8860b">$True</span>
+        AcceptButton = <span style="color:#b8860b">$OKButton</span>
+        CancelButton = <span style="color:#b8860b">$CancelButton</span>
+    } -Add (
+        (Form Label    @{Text = <span style="color:#b44">&#34;Please enter the information below:&#34;</span>; Location = <span style="color:#b44">&#34;10, 20&#34;</span>; Size = <span style="color:#b44">&#34;280, 20&#34;</span>}),
+        <span style="color:#b8860b">$TextBox</span>, <span style="color:#b8860b">$OKButton</span>, <span style="color:#b8860b">$CancelButton</span>
+    )
+).ShowDialog()
+ 
+<span style="color:#a2f;font-weight:bold">if</span> (<span style="color:#b8860b">$result</span> <span style="color:#666">-eq</span> <span style="color:#800">[System.Windows.Forms.DialogResult]</span>::OK)
+{
+    <span style="color:#b8860b">$x</span> = <span style="color:#b8860b">$TextBox</span>.Text
+    <span style="color:#b8860b">$x</span>
+}
+</code></pre></div><p><strong>Piping a container to a (new) control</strong></p>
+<p>For this I have created a small for to test the docking behavior:</p>
+<p><img src="/images/Set-FormControl/DockTest.png" alt=""></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$Form</span>    = <span style="color:#a2f">New-FormControl</span> Form @{Text = <span style="color:#b44">&#34;Dock test&#34;</span>; StartPosition = <span style="color:#b44">&#34;CenterScreen&#34;</span>; Padding = 4}
+<span style="color:#b8860b">$Table</span>   = <span style="color:#b8860b">$Form</span>  | Form TableLayoutPanel @{RowCount = 2; ColumnCount = 3; ColumnStyles = (<span style="color:#b44">&#34;Percent&#34;</span>, 50), <span style="color:#b44">&#34;AutoSize&#34;</span>, <span style="color:#b44">&#34;AutoSize&#34;</span>; Dock = <span style="color:#b44">&#34;Fill&#34;</span>}
+<span style="color:#b8860b">$Panel</span>   = <span style="color:#b8860b">$Table</span> | Form Panel @{Dock = <span style="color:#b44">&#34;Fill&#34;</span>; BorderStyle = <span style="color:#b44">&#34;FixedSingle&#34;</span>; BackColor = <span style="color:#b44">&#34;Teal&#34;</span>} -Set @{RowSpan = 2}
+<span style="color:#b8860b">$Dock</span> = <span style="color:#a2f;font-weight:bold">ForEach</span> (<span style="color:#b8860b">$i</span> <span style="color:#a2f;font-weight:bold">in</span> 1..2) {
+    <span style="color:#b8860b">$Button</span> = <span style="color:#b8860b">$Panel</span> | Form Button @{Location = <span style="color:#b44">&#34;25, </span>$(75 * <span style="color:#b8860b">$i</span> - 50)<span style="color:#b44">&#34;</span>;  Size = <span style="color:#b44">&#34;50, 50&#34;</span>; BackColor = <span style="color:#b44">&#34;Silver&#34;</span>; Enabled = <span style="color:#b8860b">$False</span>; Text = <span style="color:#b8860b">$i</span>}
+    <span style="color:#b8860b">$Group</span>  = <span style="color:#b8860b">$Table</span> | Form GroupBox @{Text = <span style="color:#b44">&#34;Dock $i&#34;</span>; AutoSize = <span style="color:#b8860b">$True</span>}
+    <span style="color:#b8860b">$Flow</span>   = <span style="color:#b8860b">$Group</span> | Form FlowLayoutPanel @{AutoSize = <span style="color:#b8860b">$True</span>; FlowDirection = <span style="color:#b44">&#34;TopDown&#34;</span>; Dock = <span style="color:#b44">&#34;Fill&#34;</span>; Padding = 4}
+    <span style="color:#b8860b">$Radio</span>  = <span style="color:#b44">&#34;None&#34;</span>, <span style="color:#b44">&#34;Top&#34;</span>, <span style="color:#b44">&#34;Left&#34;</span>, <span style="color:#b44">&#34;Bottom&#34;</span>, <span style="color:#b44">&#34;Right&#34;</span>, <span style="color:#b44">&#34;Fill&#34;</span> | <span style="color:#a2f;font-weight:bold">ForEach</span> {
+        <span style="color:#b8860b">$Flow</span> | Form RadioButton @{Text = <span style="color:#b8860b">$_</span>; AutoSize = <span style="color:#b8860b">$True</span>; Click = (<span style="color:#800">[ScriptBlock]</span>::Create(<span style="color:#b44">&#34;</span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">Dock[</span>$(<span style="color:#b8860b">$i</span> - 1)<span style="color:#b44">].Button.Dock = </span><span style="color:#b62;font-weight:bold">`$</span><span style="color:#b44">This.Text&#34;</span>))}
+    }
+    <span style="color:#a2f">New-Object</span> PSObject -Property @{Button = <span style="color:#b8860b">$Button</span>; <span style="color:#a2f">Group </span>= <span style="color:#b8860b">$Group</span>; Flow = <span style="color:#b8860b">$Flow</span>; Radio = <span style="color:#b8860b">$Radio</span>}
+}
+<span style="color:#b8860b">$Close</span>  = <span style="color:#b8860b">$Table</span> | Form Button @{Text = <span style="color:#b44">&#34;Close&#34;</span>; Dock = <span style="color:#b44">&#34;Bottom&#34;</span>; Click = {<span style="color:#b8860b">$Form</span>.Close()}} -Set @{ColumnSpan = 2}
+<span style="color:#b8860b">$Form</span>.ShowDialog()
+</code></pre></div><p>(See  <a href="https://stackoverflow.com/a/47187794/1701026">StackOverflow</a>  for an example with two docked items)</p>
+<p>The <a href="https://stackoverflow.com/a/46994239/1701026"><code>Set-ControlForm</code></a> cmdlet was originally published at <a href="https://stackoverflow.com/a/46994239/1701026">StackOverflow</a></p>
+<div class="edit-meta">
+Last updated on 29 Jun 2020
+
+
+<br>
+Published on 6 Nov 2017
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://powersnippets.com/merge-hashtable/" title="Merge-Hashtable"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Merge-Hashtable</a>
+<a class="nav nav-next" href="https://powersnippets.com/union-object/" title="Union-Object">Next - Union-Object <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer>
+</footer>
+</main><div class="sidebar">
+
+<nav class="slide-menu">
+<ul>
+<li class=""><a href="https://powersnippets.com/">Home</a></li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertfrom-sourcetable/">ConvertFrom-SourceTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-datatable/">ConvertTo-DataTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-datatable/readme/">Read Me</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-expression/">ConvertTo-Expression<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-expression/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertto-expression/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/convertto-flatobject/">ConvertTo-FlatObject</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/create-string/">Create-String</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/inline-if-iif/">Inline (IIf)</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/invoke-comobject/">Invoke-ComObject</a>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/join-object/">Join-Object<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/join-object/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/join-object/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/merge-hashtable/">Merge-Hashtable</a>
+  
+</li>
+
+<li class="parent active"><a href="https://powersnippets.com/set-formcontrol/">Set-FormControl</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/union-object/">Union-Object</a>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"><h2>WhoAmI</h2>
+<p>
+<img align="left" src="/images/WhoAmI.jpg" alt width="74" height="96" />
+My name is Ronald Bode.<br />
+I am a Windows engineer and developer.
+</p>
+<p>
+Code writing is my hobby and I love riddles. Currently I am most active with PowerShell programming, RPA (UiPath) and creating webpages.
+</p>
+<a href="https://www.linkedin.com/in/ronald-bode-4a1156124/"><img src="/images/icons/linkedin.png" width="16" />LinkedIn</a>
+<a href="https://stackoverflow.com/users/1701026/iron/"><img src="/images/icons/stackoverflow.png" width="16" />StackOverflow</a>
+<a href="https://github.com/iRon7/"><img src="/images/icons/github.png" width="16" />GitHub</a></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

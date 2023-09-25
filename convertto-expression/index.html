@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ConvertTo-Expression - Power$nippets</title>
+<meta name="description" content="Boost your shell with reusable code stripped to its essentials">
+<meta name="generator" content="Hugo 0.72.0" />
+<link rel="shortcut icon" href="/images/favicons/favicon.ico">
+<link href="https://powersnippets.com//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://powersnippets.com/convertto-expression/">
+<link rel="stylesheet" href="https://powersnippets.com/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://powersnippets.com/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://powersnippets.com/js/bundle.js"></script>
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet">
+<style>
+:root {--custom-font-color: #f4f4f4;--custom-background-color: #012345;}
+</style>
+<meta property="og:title" content="ConvertTo-Expression" />
+<meta property="og:description" content="Boost your shell with reusable code stripped to its essentials" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://powersnippets.com/convertto-expression/" />
+<meta property="og:updated_time" content="2020-06-29T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="ConvertTo-Expression"/>
+<meta name="twitter:description" content="Boost your shell with reusable code stripped to its essentials"/>
+<meta itemprop="name" content="ConvertTo-Expression">
+<meta itemprop="description" content="Boost your shell with reusable code stripped to its essentials">
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet"></head>
+<body><div class="container"><header>
+<h1>Power$nippets</h1>
+
+<p class="description">Boost your shell with reusable code stripped to its essentials</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>ConvertTo-Expression</h1><p>PowerShell has a few cmdlets to convert (complex) objects to a string. This is called serialization or stringification. Examples are:</p>
+<ul>
+<li><a href="https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/convertto-json?view=powershell-5.1"><code>ConvertTo-Json</code></a> (introduced in Windows PowerShell 3.0)<a href="https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/convertto-json?view=powershell-5.1"></a></li>
+<li><a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/convertto-xml?view=powershell-5.1"><code>ConvertTo-Xml</code></a> or <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/export-clixml?view=powershell-5.1"><code>Export-Clixml</code></a></li>
+<li><a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/convertto-csv?view=powershell-5.1"><code>ConvertTo-Csv</code></a> or <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/export-csv?view=powershell-5.1"><code>Export-Csv</code></a> (only useful for flat objects)</li>
+</ul>
+<p>Besides there are a few cmdlets to do the opposite and convert the string back to a (complex) object. This is called deserialization or parsing. Examples are:</p>
+<ul>
+<li><a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/convertfrom-json?view=powershell-5.1"><code>ConvertFrom-JSON</code></a> (introduced in Windows PowerShell 3.0)</li>
+<li><a href="https://blogs.technet.microsoft.com/heyscriptingguy/2013/04/01/working-with-xml/"><code>[Xml]_&lt;String&gt;_</code></a> or <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/import-clixml?view=powershell-5.1"><code>Import-Clixml</code></a></li>
+<li><a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/convertfrom-csv?view=powershell-5.1"><code>ConvertFrom-Csv</code></a> or <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/import-csv?view=powershell-5.1"><code>Import-Csv</code></a> (only useful for flat objects)</li>
+</ul>
+<p>But there is no standard cmdlet that lets you convert an object to a PowerShell Object Notation (PSON), yet there exists actually already a kind of <code>ConvertFrom-PSON</code> in the form of: <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-expression?view=powershell-5.1"><code>Invoke-Expression</code></a>. The <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-expression?view=powershell-5.1"><code>Invoke-Expression</code></a>cmdlet evaluates or runs a specified string as a command and returns the results of the expression or command. This means that the only thing required is a cmdlet which can do the opposite: serialize an object to a PSON string that can be read back with <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-expression?view=powershell-5.1"><code>Invoke-Expression</code></a> (which could be aliased to: <code>ConvertFrom-PSON</code>). At the same time, <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-expression?view=powershell-5.1"><code>Invoke-Expression</code></a> is a good praktisch to test the integrity of a <code>ConvertTo-Expression</code> (alias <code>ConvertTo-PSON</code>) cmdlet; it shouldn’t produce any error, all (embedded) objects and values should be read back and the datatypes should match the source as much as possible. Note here that not all datatypes can be converted and converted back, simply because you can’t assume that the required constructor exists on every other system. Due to this, system objects are converted to <code>PSCustomObject</code> objects which usually react the same with regards property references. Saying that, in general, PSON is better capable of handling native PowerShell object types as e.g. <code>[Boolean]</code>, <code>[Char]</code> and <code>[DateTime]</code> than JSON, but the downside to this is that it can’t interchange data with other programming languages (yet?). An other advantage of PSON is that <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-expression?view=powershell-5.1"><code>Invoke-Expression</code></a> is also available in older PowerShell versions were the <code>ConvertTo-Expression</code> cmdlet can easily be added as well.</p>
+<p>Besides serializing objects to a string, the <code>ConvertTo-Expression</code> cmdlet can come in handy for revealing and logging datatypes and structures of (embedded) objects and values.</p>
+<div class="edit-meta">
+Last updated on 29 Jun 2020
+
+
+<br>
+Published on 6 Nov 2017
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://powersnippets.com/convertto-datatable/readme/" title="Read Me"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Read Me</a>
+<a class="nav nav-next" href="https://powersnippets.com/convertto-expression/readme/" title="Read Me">Next - Read Me <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer>
+</footer>
+</main><div class="sidebar">
+
+<nav class="slide-menu">
+<ul>
+<li class=""><a href="https://powersnippets.com/">Home</a></li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertfrom-sourcetable/">ConvertFrom-SourceTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-datatable/">ConvertTo-DataTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-datatable/readme/">Read Me</a></li>
+</ul>
+  
+</li>
+
+<li class="parent active has-sub-menu"><a href="https://powersnippets.com/convertto-expression/">ConvertTo-Expression<span class="mark opened">-</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-expression/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertto-expression/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/convertto-flatobject/">ConvertTo-FlatObject</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/create-string/">Create-String</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/inline-if-iif/">Inline (IIf)</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/invoke-comobject/">Invoke-ComObject</a>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/join-object/">Join-Object<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/join-object/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/join-object/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/merge-hashtable/">Merge-Hashtable</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/set-formcontrol/">Set-FormControl</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/union-object/">Union-Object</a>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"><h2>WhoAmI</h2>
+<p>
+<img align="left" src="/images/WhoAmI.jpg" alt width="74" height="96" />
+My name is Ronald Bode.<br />
+I am a Windows engineer and developer.
+</p>
+<p>
+Code writing is my hobby and I love riddles. Currently I am most active with PowerShell programming, RPA (UiPath) and creating webpages.
+</p>
+<a href="https://www.linkedin.com/in/ronald-bode-4a1156124/"><img src="/images/icons/linkedin.png" width="16" />LinkedIn</a>
+<a href="https://stackoverflow.com/users/1701026/iron/"><img src="/images/icons/stackoverflow.png" width="16" />StackOverflow</a>
+<a href="https://github.com/iRon7/"><img src="/images/icons/github.png" width="16" />GitHub</a></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

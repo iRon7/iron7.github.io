@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ConvertFrom-SourceTable on Power$nippets</title>
+    <link>https://powersnippets.com/convertfrom-sourcetable/</link>
+    <description>Recent content in ConvertFrom-SourceTable on Power$nippets</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 04 Jun 2020 15:00:46 +0200</lastBuildDate>
+    
+	<atom:link href="https://powersnippets.com/convertfrom-sourcetable/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Read Me</title>
+      <link>https://powersnippets.com/convertfrom-sourcetable/readme/</link>
+      <pubDate>Mon, 06 Nov 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://powersnippets.com/convertfrom-sourcetable/readme/</guid>
+      <description>ConvertFrom-SourceTable Converts a fixed column table to objects.
+The ConvertFrom-SourceTable cmdlet creates objects from a fixed column source table (format-table) possibly surrounded by horizontal and/or vertical rulers. The ConvertFrom-SourceTable cmdlet supports most data types using the following formatting and alignment rules:
+Data that is left aligned will be parsed to the generic column type which is a string by default.
+Data that is right aligned will be evaluated.
+Data that is justified (using the full column with) is following the the header alignment and evaluated if the header is right aligned.</description>
+    </item>
+    
+    <item>
+      <title>Source &amp; download</title>
+      <link>https://powersnippets.com/convertfrom-sourcetable/source/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://powersnippets.com/convertfrom-sourcetable/source/</guid>
+      <description>The ConvertFrom-SourceTable script can be installed from the PowerShell Gallery:Install-Script -Name ConvertFrom-SourceTable As it concerns a standalone script, installation isn&#39;t really required.If you don&#39;t have administrator rights, you might just download the script (or copy it) to the required location.You might than simply invoke the script using PowerShell dot sourcing:. .\ConvertFrom-SourceTable.ps1 For source code versions, testers history etc., see the ConvertFrom-SourceTable project site on GitHub.</description>
+    </item>
+    
+  </channel>
+</rss>

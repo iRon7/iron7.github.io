@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ConvertTo-DataTable on Power$nippets</title>
+    <link>https://powersnippets.com/convertto-datatable/</link>
+    <description>Recent content in ConvertTo-DataTable on Power$nippets</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 06 Nov 2017 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://powersnippets.com/convertto-datatable/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Read Me</title>
+      <link>https://powersnippets.com/convertto-datatable/readme/</link>
+      <pubDate>Mon, 06 Nov 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://powersnippets.com/convertto-datatable/readme/</guid>
+      <description>ConvertTo-DataTable Convert an object (list) to a data table.
+Syntax &amp;lt;Object&amp;gt; | ConvertTo-DataTable [-ColumnType] &amp;lt;HashTable&amp;gt; Parameters [-Object] &amp;lt;Object&amp;gt;
+The object(s) to be converted to a DataTable.
+[-ColumnType] &amp;lt;HashTable&amp;gt;
+Type definition of each column by name: @{&amp;lt;ColumnName&amp;gt; = &amp;lt;Type&amp;gt;; ...}
+Examples Converting a custom object to a data table
+$MyObject = @( New-Object PSCustomObject -Property @{Name = &amp;#34;a&amp;#34;; Value = 123; Date = $Null} New-Object PSCustomObject -Property @{Name = &amp;#34;b&amp;#34;; Value = 123456789012; Date = $Now} ) $DataTable = $MyObject | ConvertTo-DataTable Defining the column types:</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Inline (IIf) - Power$nippets</title>
+<meta name="description" content="Boost your shell with reusable code stripped to its essentials">
+<meta name="generator" content="Hugo 0.72.0" />
+<link rel="shortcut icon" href="/images/favicons/favicon.ico">
+<link href="https://powersnippets.com//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://powersnippets.com/inline-if-iif/">
+<link rel="stylesheet" href="https://powersnippets.com/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://powersnippets.com/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://powersnippets.com/js/bundle.js"></script>
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet">
+<style>
+:root {--custom-font-color: #f4f4f4;--custom-background-color: #012345;}
+</style>
+<meta property="og:title" content="Inline (IIf)" />
+<meta property="og:description" content="Boost your shell with reusable code stripped to its essentials" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://powersnippets.com/inline-if-iif/" />
+<meta property="og:updated_time" content="2020-06-29T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Inline (IIf)"/>
+<meta name="twitter:description" content="Boost your shell with reusable code stripped to its essentials"/>
+<meta itemprop="name" content="Inline (IIf)">
+<meta itemprop="description" content="Boost your shell with reusable code stripped to its essentials">
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet"></head>
+<body><div class="container"><header>
+<h1>Power$nippets</h1>
+
+<p class="description">Boost your shell with reusable code stripped to its essentials</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Inline (IIf)</h1><p>To create an a statement with an <strong>Inline If</strong> You can use the PowerShell’s native way:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b44">&#34;The condition is &#34;</span> + (&amp;{<span style="color:#a2f;font-weight:bold">If</span>(<span style="color:#b8860b">$Condition</span>) {<span style="color:#b44">&#34;True&#34;</span>} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b44">&#34;False&#34;</span>}}) + <span style="color:#b44">&#34;.&#34;</span>
+</code></pre></div><p>But as this adds a lot of parenthesis and brackets to your syntax, you might consider the following (probably one of the smallest existing) CmdLet:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f;font-weight:bold">Function</span> IIf(<span style="color:#b8860b">$If</span>, <span style="color:#b8860b">$Right</span>, <span style="color:#b8860b">$Wrong</span>) {<span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$If</span>) {<span style="color:#b8860b">$Right</span>} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$Wrong</span>}}
+</code></pre></div><p>Which will simplify your command to:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b44">&#34;The condition is &#34;</span> + (IIf <span style="color:#b8860b">$Condition</span> <span style="color:#b44">&#34;True&#34;</span> <span style="color:#b44">&#34;False&#34;</span>) + <span style="color:#b44">&#34;.&#34;</span>
+</code></pre></div><hr>
+<p><em>Added 2014-09-19:</em></p>
+<p>I have been using the <code>IIf</code> cmdlet now for a while, and I still think it will make syntaxes more readable in a lot of cases, but as I agree with Jason’s note about the unwanted side effect that both possible values will be evaluated even obviously only one value is used, I have changed the <code>IIf</code> cmdlet a bit:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f;font-weight:bold">Function</span> IIf(<span style="color:#b8860b">$If</span>, <span style="color:#b8860b">$IfTrue</span>, <span style="color:#b8860b">$IfFalse</span>) {
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$If</span>) {<span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$IfTrue</span> <span style="color:#666">-is</span> <span style="color:#b44">&#34;ScriptBlock&#34;</span>) {&amp;<span style="color:#b8860b">$IfTrue</span>} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$IfTrue</span>}}
+    <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$IfFalse</span> <span style="color:#666">-is</span> <span style="color:#b44">&#34;ScriptBlock&#34;</span>) {&amp;<span style="color:#b8860b">$IfFalse</span>} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$IfFalse</span>}}
+}
+</code></pre></div><p>Now you <em>might</em> add a ScriptBlock (surrounded by <code>{}</code>'s) instead of an object which will not be evaluated if it is not required as shown in this example:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">IIf <span style="color:#b8860b">$a</span> {1/<span style="color:#b8860b">$a</span>} NaN
+</code></pre></div><p>Or placed inline:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b44">&#34;The multiplicative inverse of $a is </span>$(IIf <span style="color:#b8860b">$a</span> {1/<span style="color:#b8860b">$a</span>} NaN)<span style="color:#b44">.&#34;</span>
+</code></pre></div><p>In case <code>$a</code> has a value other than zero, the multiplicative inverse is returned; otherwise, it will return <code>NaN</code> (where the <code>{1/$a}</code> is not evaluated).</p>
+<p>Another nice example where it will make a quiet ambiguous syntax a lot simpler (especially in case you want to place it inline) is where you want to run a method on an object which could potentially be <code>$Null</code>.</p>
+<p>The native ‘<code>If</code>’ way to do this, would be something like this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Object</span>) {<span style="color:#b8860b">$a</span> = <span style="color:#b8860b">$Object</span>.Method()} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$a</span> = <span style="color:#b8860b">$null</span>}
+</code></pre></div><p>(Note that the <code>Else</code> part is often required in e.g. loops where you will need to reset <code>$a</code>.)</p>
+<p>With the <code>IIf</code> cmdlet it will look like this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$a</span> = IIf <span style="color:#b8860b">$Object</span> {<span style="color:#b8860b">$Object</span>.Method()}
+</code></pre></div><p>(Note that if the <code>$Object</code> is <code>$Null</code>, <code>$a</code> will automatically be set to <code>$Null</code> if no <code>$IfFalse</code> value is supplied.)</p>
+<hr>
+<p><em>Added 2014-09-19:</em></p>
+<p>Minor change to the <code>IIf</code> cmdlet which now sets the current object (<a href="https://technet.microsoft.com/library/hh847768.aspx"><code>$_</code></a> or <a href="https://technet.microsoft.com/library/hh847768.aspx"><code>$PSItem</code></a>):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f;font-weight:bold">Function</span> IIf(<span style="color:#b8860b">$If</span>, <span style="color:#b8860b">$Then</span>, <span style="color:#b8860b">$Else</span>) {
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$If</span> <span style="color:#666">-IsNot</span> <span style="color:#b44">&#34;Boolean&#34;</span>) {<span style="color:#b8860b">$_</span> = <span style="color:#b8860b">$If</span>}
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$If</span>) {<span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Then</span> <span style="color:#666">-is</span> <span style="color:#b44">&#34;ScriptBlock&#34;</span>) {&amp;<span style="color:#b8860b">$Then</span>} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$Then</span>}}
+    <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Else</span> <span style="color:#666">-is</span> <span style="color:#b44">&#34;ScriptBlock&#34;</span>) {&amp;<span style="color:#b8860b">$Else</span>} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$Else</span>}}
+}
+</code></pre></div><p>This means you can simplify a statement (the PowerShell way) with a method on an object that could potentially be <code>$Null</code>.</p>
+<p>The general syntax for this will now be <code>$a = IIf $Object {$_.Method()}</code>. A more common example will look something like:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$VolatileEnvironment</span> = <span style="color:#a2f">Get-Item</span> -ErrorAction SilentlyContinue <span style="color:#b44">&#34;HKCU:\Volatile Environment&#34;</span>
+<span style="color:#b8860b">$UserName</span> = IIf <span style="color:#b8860b">$VolatileEnvironment</span> {<span style="color:#b8860b">$_</span>.GetValue(<span style="color:#b44">&#34;UserName&#34;</span>)}
+</code></pre></div><p>Note that the command <code>$VolatileEnvironment.GetValue(&quot;UserName&quot;)</code> will normally result in an <strong>&ldquo;You cannot call a method on a null-valued expression.&quot;</strong> error if the concerned registry (<code>HKCU:\Volatile Environment</code>) doesn’t exist; where the command  <code>IIf $VolatileEnvironment {$_.GetValue(&quot;UserName&quot;)}</code> will just return <code>$Null</code>.</p>
+<p>If the <code>$If</code> parameter is a condition (something like <code>$Number -lt 5</code>) or forced to a condition (with the <code>[Bool]</code> type), the <code>IIf</code> cmdlet won&rsquo;t overrule the current object, e.g.:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$RegistryKeys</span> | <span style="color:#a2f;font-weight:bold">ForEach</span> {
+<span style="color:#b8860b">$UserName</span> = IIf (<span style="color:#b8860b">$Number</span> <span style="color:#666">-lt</span> 5) {<span style="color:#b8860b">$_</span>.GetValue(<span style="color:#b44">&#34;UserName&#34;</span>)}
+}
+</code></pre></div><p>Or:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$RegistryKeys</span> | <span style="color:#a2f;font-weight:bold">ForEach</span> {
+    <span style="color:#b8860b">$UserName</span> = IIf <span style="color:#800">[Bool]</span><span style="color:#b8860b">$VolatileEnvironment</span> {<span style="color:#b8860b">$_</span>.OtherMethod()}
+}
+</code></pre></div><hr>
+<p><em>Added 2020-03-20:</em></p>
+<p><a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.core/about/about_if?view=powershell-7#using-the-ternary-operator-syntax"><strong>Using the ternary operator syntax</strong></a></p>
+<p>PowerShell 7.0 introduced a new syntax using the ternary operator. It follows the C# ternary operator syntax:</p>
+<blockquote>
+<p>The ternary operator behaves like the simplified <code>if-else</code> statement.
+The <code>&lt;condition&gt;</code> expression is evaluated and the result is converted
+to a boolean to determine which branch should be evaluated next:</p>
+<p>The <code>&lt;if-true&gt;</code> expression is executed if the <code>&lt;condition&gt;</code> expression is true
+The <code>&lt;if-false&gt;</code> expression is executed if the <code>&lt;condition&gt;</code> expression is false</p>
+</blockquote>
+<p><strong>Example</strong>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b44">&#34;The multiplicative inverse of $a is </span>$(<span style="color:#b8860b">$a</span> ? (&amp; {1/<span style="color:#b8860b">$a</span>}) <span style="">:</span> <span style="color:#b44">&#39;NaN&#39;</span>)<span style="color:#b44">.&#34;</span>
+</code></pre></div><div class="edit-meta">
+Last updated on 29 Jun 2020
+
+
+<br>
+Published on 6 Nov 2017
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://powersnippets.com/create-string/" title="Create-String"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Create-String</a>
+<a class="nav nav-next" href="https://powersnippets.com/invoke-comobject/" title="Invoke-ComObject">Next - Invoke-ComObject <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer>
+</footer>
+</main><div class="sidebar">
+
+<nav class="slide-menu">
+<ul>
+<li class=""><a href="https://powersnippets.com/">Home</a></li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertfrom-sourcetable/">ConvertFrom-SourceTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-datatable/">ConvertTo-DataTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-datatable/readme/">Read Me</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-expression/">ConvertTo-Expression<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-expression/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertto-expression/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/convertto-flatobject/">ConvertTo-FlatObject</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/create-string/">Create-String</a>
+  
+</li>
+
+<li class="parent active"><a href="https://powersnippets.com/inline-if-iif/">Inline (IIf)</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/invoke-comobject/">Invoke-ComObject</a>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/join-object/">Join-Object<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/join-object/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/join-object/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/merge-hashtable/">Merge-Hashtable</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/set-formcontrol/">Set-FormControl</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/union-object/">Union-Object</a>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"><h2>WhoAmI</h2>
+<p>
+<img align="left" src="/images/WhoAmI.jpg" alt width="74" height="96" />
+My name is Ronald Bode.<br />
+I am a Windows engineer and developer.
+</p>
+<p>
+Code writing is my hobby and I love riddles. Currently I am most active with PowerShell programming, RPA (UiPath) and creating webpages.
+</p>
+<a href="https://www.linkedin.com/in/ronald-bode-4a1156124/"><img src="/images/icons/linkedin.png" width="16" />LinkedIn</a>
+<a href="https://stackoverflow.com/users/1701026/iron/"><img src="/images/icons/stackoverflow.png" width="16" />StackOverflow</a>
+<a href="https://github.com/iRon7/"><img src="/images/icons/github.png" width="16" />GitHub</a></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

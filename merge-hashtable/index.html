@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Merge-Hashtable - Power$nippets</title>
+<meta name="description" content="Boost your shell with reusable code stripped to its essentials">
+<meta name="generator" content="Hugo 0.72.0" />
+<link rel="shortcut icon" href="/images/favicons/favicon.ico">
+<link href="https://powersnippets.com//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://powersnippets.com/merge-hashtable/">
+<link rel="stylesheet" href="https://powersnippets.com/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://powersnippets.com/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://powersnippets.com/js/bundle.js"></script>
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet">
+<style>
+:root {--custom-font-color: #f4f4f4;--custom-background-color: #012345;}
+</style>
+<meta property="og:title" content="Merge-Hashtable" />
+<meta property="og:description" content="Boost your shell with reusable code stripped to its essentials" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://powersnippets.com/merge-hashtable/" />
+<meta property="og:updated_time" content="2020-06-29T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Merge-Hashtable"/>
+<meta name="twitter:description" content="Boost your shell with reusable code stripped to its essentials"/>
+<meta itemprop="name" content="Merge-Hashtable">
+<meta itemprop="description" content="Boost your shell with reusable code stripped to its essentials">
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet"></head>
+<body><div class="container"><header>
+<h1>Power$nippets</h1>
+
+<p class="description">Boost your shell with reusable code stripped to its essentials</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Merge-Hashtable</h1><p>PowerShell is capable of just appending hashtables like:  <code>@{a = 1; b = 2} + @{c = 3; d = 4}</code>  but in case there is an overlap in the tables and the keys are not unique, you will receive an error:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Item has already been added. Key in dictionary: &#39;a&#39; Key being added: &#39;a&#39;
+At line:1 char:1
++ @{a = 1; b = 2} + @{a = 3; d = 4}
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ CategoryInfo : OperationStopped: (:) [], ArgumentException
++ FullyQualifiedErrorId : System.ArgumentException
+</code></pre></div><p>The resolve this, it is important to decide what to do with values of the duplicate keys, keep the ones in the first table supplied, overrule them with any new table, or do something more advance like; calculating the average?<br>
+The  <code>Merge-Hashtable</code> cmdlet below will by default put all the values of the duplicated keys in array and let the programmer decides how to merge them if required.</p>
+<p>Instead of removing keys you might consider to simply overwrite them:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$h1</span> = @{a = 9; b = 8; c = 7}
+<span style="color:#b8860b">$h2</span> = @{b = 6; c = 5; d = 4}
+<span style="color:#b8860b">$h3</span> = @{c = 3; d = 2; e = 1}
+
+
+<span style="color:#a2f;font-weight:bold">Function</span> <span style="color:#a2f">Merge-Hashtables</span> {
+    <span style="color:#b8860b">$Output</span> = @{}
+    <span style="color:#a2f;font-weight:bold">ForEach</span> (<span style="color:#b8860b">$Hashtable</span> <span style="color:#a2f;font-weight:bold">in</span> (<span style="color:#b8860b">$Input</span> + <span style="color:#b8860b">$Args</span>)) {
+        <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Hashtable</span> <span style="color:#666">-is</span> <span style="color:#800">[Hashtable]</span>) {
+            <span style="color:#a2f;font-weight:bold">ForEach</span> (<span style="color:#b8860b">$Key</span> <span style="color:#a2f;font-weight:bold">in</span> <span style="color:#b8860b">$Hashtable</span>.Keys) {<span style="color:#b8860b">$Output</span>.<span style="color:#b8860b">$Key</span> = <span style="color:#b8860b">$Hashtable</span>.<span style="color:#b8860b">$Key</span>}
+        }
+    }
+    <span style="color:#b8860b">$Output</span>
+}
+</code></pre></div><p>For this cmdlet you can use several syntaxes and you are not limited to two input tables:
+Using the pipeline: <code>$h1, $h2, $h3 | Merge-Hashtables</code><br>
+Using arguments: <code>Merge-Hashtables $h1 $h2 $h3</code><br>
+Or a combination: <code>$h1 | Merge-Hashtables $h2 $h3</code><br>
+All  above examples return the same hash table:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">Name                           Value
+----                           -----
+e                              1
+d                              2
+b                              6
+c                              3
+a                              9
+</code></pre></div><p>If there are any duplicate keys in the supplied hash tables, the value of the last hash table is taken.</p>
+<hr>
+<p>(Added 2017-07-09)</p>
+<h2 id="merge-hashtables-version-2">Merge-Hashtables version 2</h2>
+<p>In general, I prefer more global functions which can be customized with parameters to specific needs as in the original question: <em>&ldquo;overwriting key-value pairs in the first if the same key exists in the second&rdquo;</em>. Why letting the last one overrule and not the first? Why removing anything at all? Maybe someone else want to merge or join the values or get the largest value or just the average&hellip;<br>
+The version below does no longer support supplying hash tables as arguments (you can only pipe hash tables to the function) but has a parameter that lets you decide how to treat the value array in duplicate entries by operating the value array assigned to the hash key presented in the current object (<code>$_</code>).</p>
+<p><strong>Function</strong></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f;font-weight:bold">Function</span> <span style="color:#a2f">Merge-Hashtables</span>(<span style="color:#800">[ScriptBlock]</span><span style="color:#b8860b">$Operator</span>) {
+    <span style="color:#b8860b">$Output</span> = @{}
+    <span style="color:#a2f;font-weight:bold">ForEach</span> (<span style="color:#b8860b">$Hashtable</span> <span style="color:#a2f;font-weight:bold">in</span> <span style="color:#b8860b">$Input</span>) {
+        <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Hashtable</span> <span style="color:#666">-is</span> <span style="color:#800">[Hashtable]</span>) {
+            <span style="color:#a2f;font-weight:bold">ForEach</span> (<span style="color:#b8860b">$Key</span> <span style="color:#a2f;font-weight:bold">in</span> <span style="color:#b8860b">$Hashtable</span>.Keys) {<span style="color:#b8860b">$Output</span>.<span style="color:#b8860b">$Key</span> = <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Output</span>.ContainsKey(<span style="color:#b8860b">$Key</span>)) {@(<span style="color:#b8860b">$Output</span>.<span style="color:#b8860b">$Key</span>) + <span style="color:#b8860b">$Hashtable</span>.<span style="color:#b8860b">$Key</span>} <span style="color:#a2f;font-weight:bold">Else</span>  {<span style="color:#b8860b">$Hashtable</span>.<span style="color:#b8860b">$Key</span>}}
+        }
+    }
+    <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Operator</span>) {<span style="color:#a2f;font-weight:bold">ForEach</span> (<span style="color:#b8860b">$Key</span> <span style="color:#a2f;font-weight:bold">in</span> @(<span style="color:#b8860b">$Output</span>.Keys)) {<span style="color:#b8860b">$_</span> = @(<span style="color:#b8860b">$Output</span>.<span style="color:#b8860b">$Key</span>); <span style="color:#b8860b">$Output</span>.<span style="color:#b8860b">$Key</span> = <span style="color:#a2f">Invoke-Command</span> <span style="color:#b8860b">$Operator</span>}}
+    <span style="color:#b8860b">$Output</span>
+}
+</code></pre></div><p><strong>Syntax</strong></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">HashTable[] &lt;Hashtables&gt; | <span style="color:#a2f">Merge-Hashtables</span> [-Operator &lt;ScriptBlock&gt;]
+</code></pre></div><p><strong>Default</strong>
+By default, all values from duplicated hash table entries will added to an array:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">PS </span>C:\&gt; <span style="color:#b8860b">$h1</span>, <span style="color:#b8860b">$h2</span>, <span style="color:#b8860b">$h3</span> | <span style="color:#a2f">Merge-Hashtables</span>
+
+Name                           Value
+----                           -----
+e                              1
+d                              {4, 2}
+b                              {8, 6}
+c                              {7, 5, 3}
+a                              9
+</code></pre></div><p><strong>Examples</strong>
+To get the same result as version 1 (using the <strong>last values</strong>) use the command: <code>$h1, $h2, $h3 | Merge-Hashtables {$_[-1]}</code>. If you would like to use the <strong>first values</strong> instead, the command is: <code>$h1, $h2, $h3 | Merge-Hashtables {$_[0]}</code> or the <strong>largest values</strong>: <code>$h1, $h2, $h3 | Merge-Hashtables {($_ | Measure-Object -Maximum).Maximum}</code>.</p>
+<p>More examples:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">PS </span>C:\&gt; <span style="color:#b8860b">$h1</span>, <span style="color:#b8860b">$h2</span>, <span style="color:#b8860b">$h3</span> | <span style="color:#a2f">Merge-Hashtables</span> {(<span style="color:#b8860b">$_</span> | <span style="color:#a2f">Measure-Object</span> -Average).Average} <span style="color:#080;font-style:italic"># Take the average values&#34;</span>
+
+Name                           Value
+----                           -----
+e                              1
+d                              3
+b                              7
+c                              5
+a                              9
+</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">PS </span>C:\&gt; <span style="color:#b8860b">$h1</span>, <span style="color:#b8860b">$h2</span>, <span style="color:#b8860b">$h3</span> | <span style="color:#a2f">Merge-Hashtables</span> {<span style="color:#b8860b">$_</span> -Join <span style="color:#b44">&#34;&#34;</span>} <span style="color:#080;font-style:italic"># Join the values together</span>
+
+Name                           Value
+----                           -----
+e                              1
+d                              42
+b                              86
+c                              753
+a                              9
+</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">PS </span>C:\&gt; <span style="color:#b8860b">$h1</span>, <span style="color:#b8860b">$h2</span>, <span style="color:#b8860b">$h3</span> | <span style="color:#a2f">Merge-Hashtables</span> {<span style="color:#b8860b">$_</span> | <span style="color:#a2f">Sort-Object</span>} <span style="color:#080;font-style:italic"># Sort the values list</span>
+
+Name                           Value
+----                           -----
+e                              1
+d                              {2, 4}
+b                              {6, 8}
+c                              {3, 5, 7}
+a                              9
+</code></pre></div><p>The <a href="https://stackoverflow.com/a/32890418/1701026"><code>Merge-HashTable</code></a> cmdlet was originally published at <a href="https://stackoverflow.com/a/32890418/1701026">StackOverflow</a></p>
+<div class="edit-meta">
+Last updated on 29 Jun 2020
+
+
+<br>
+Published on 6 Nov 2017
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://powersnippets.com/join-object/source/" title="Source &amp; download"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Source &amp; download</a>
+<a class="nav nav-next" href="https://powersnippets.com/set-formcontrol/" title="Set-FormControl">Next - Set-FormControl <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer>
+</footer>
+</main><div class="sidebar">
+
+<nav class="slide-menu">
+<ul>
+<li class=""><a href="https://powersnippets.com/">Home</a></li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertfrom-sourcetable/">ConvertFrom-SourceTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-datatable/">ConvertTo-DataTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-datatable/readme/">Read Me</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-expression/">ConvertTo-Expression<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-expression/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertto-expression/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/convertto-flatobject/">ConvertTo-FlatObject</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/create-string/">Create-String</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/inline-if-iif/">Inline (IIf)</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/invoke-comobject/">Invoke-ComObject</a>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/join-object/">Join-Object<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/join-object/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/join-object/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class="parent active"><a href="https://powersnippets.com/merge-hashtable/">Merge-Hashtable</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/set-formcontrol/">Set-FormControl</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/union-object/">Union-Object</a>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"><h2>WhoAmI</h2>
+<p>
+<img align="left" src="/images/WhoAmI.jpg" alt width="74" height="96" />
+My name is Ronald Bode.<br />
+I am a Windows engineer and developer.
+</p>
+<p>
+Code writing is my hobby and I love riddles. Currently I am most active with PowerShell programming, RPA (UiPath) and creating webpages.
+</p>
+<a href="https://www.linkedin.com/in/ronald-bode-4a1156124/"><img src="/images/icons/linkedin.png" width="16" />LinkedIn</a>
+<a href="https://stackoverflow.com/users/1701026/iron/"><img src="/images/icons/stackoverflow.png" width="16" />StackOverflow</a>
+<a href="https://github.com/iRon7/"><img src="/images/icons/github.png" width="16" />GitHub</a></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

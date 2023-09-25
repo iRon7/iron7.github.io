@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Create-String - Power$nippets</title>
+<meta name="description" content="Boost your shell with reusable code stripped to its essentials">
+<meta name="generator" content="Hugo 0.72.0" />
+<link rel="shortcut icon" href="/images/favicons/favicon.ico">
+<link href="https://powersnippets.com//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://powersnippets.com/create-string/">
+<link rel="stylesheet" href="https://powersnippets.com/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://powersnippets.com/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://powersnippets.com/js/bundle.js"></script>
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet">
+<style>
+:root {--custom-font-color: #f4f4f4;--custom-background-color: #012345;}
+</style>
+<meta property="og:title" content="Create-String" />
+<meta property="og:description" content="Boost your shell with reusable code stripped to its essentials" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://powersnippets.com/create-string/" />
+<meta property="og:updated_time" content="2020-06-29T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Create-String"/>
+<meta name="twitter:description" content="Boost your shell with reusable code stripped to its essentials"/>
+<meta itemprop="name" content="Create-String">
+<meta itemprop="description" content="Boost your shell with reusable code stripped to its essentials">
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet"></head>
+<body><div class="container"><header>
+<h1>Power$nippets</h1>
+
+<p class="description">Boost your shell with reusable code stripped to its essentials</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Create-String</h1><p>As there is no 100% guaranty that the <a href="https://msdn.microsoft.com/en-us/library/system.web.security.membership.generatepassword(v=vs.110).aspx">Membership.GeneratePassword Method</a> generates a password that meets the <a href="https://technet.microsoft.com/en-us/library/cc786468(v=ws.10).aspx">AD complexity requirements</a>, I create a small cmdlet to generate random strings according to a certain complexity:</p>
+<h3 id="cmdlet">Cmdlet</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f;font-weight:bold">Function</span> Create-String{                                         <span style="color:#080;font-style:italic"># https://powersnippets.com/create-password/</span>
+    [<span style="color:#a2f;font-weight:bold">CmdletBinding</span>()]<span style="color:#a2f;font-weight:bold">Param</span> (                                    <span style="color:#080;font-style:italic"># Version 01.01.00, by iRon</span>
+        <span style="color:#800">[Int]</span><span style="color:#b8860b">$Size</span> = 8, <span style="color:#800">[Char[]]</span><span style="color:#b8860b">$Complexity</span> = <span style="color:#b44">&#34;ULNS&#34;</span>, <span style="color:#800">[Char[]]</span><span style="color:#b8860b">$Exclude</span>
+    )
+    <span style="color:#b8860b">$AllTokens</span> = @(); <span style="color:#b8860b">$Chars</span> = @(); <span style="color:#b8860b">$TokenSets</span> = @{
+        UpperCase = <span style="color:#800">[Char[]]</span><span style="color:#b44">&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#39;</span>
+        LowerCase = <span style="color:#800">[Char[]]</span><span style="color:#b44">&#39;abcdefghijklmnopqrstuvwxyz&#39;</span>
+        Numbers   = <span style="color:#800">[Char[]]</span><span style="color:#b44">&#39;0123456789&#39;</span>
+        Symbols   = <span style="color:#800">[Char[]]</span><span style="color:#b44">&#39;!&#34;#$%&amp;&#39;&#39;()*+,-./:;&lt;=&gt;?@[\]^_`{|}~&#39;</span>
+    }
+    <span style="color:#b8860b">$TokenSets</span>.Keys | <span style="color:#a2f">Where </span>{<span style="color:#b8860b">$Complexity</span> <span style="color:#666">-Contains</span> <span style="color:#b8860b">$_</span>[0]} | <span style="color:#a2f;font-weight:bold">ForEach</span> {
+        <span style="color:#b8860b">$TokenSet</span> = <span style="color:#b8860b">$TokenSets</span>.<span style="color:#b8860b">$_</span> | <span style="color:#a2f">Where </span>{<span style="color:#b8860b">$Exclude</span> <span style="color:#666">-cNotContains</span> <span style="color:#b8860b">$_</span>} | <span style="color:#a2f;font-weight:bold">ForEach</span> {<span style="color:#b8860b">$_</span>}
+        <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$_</span>[0] <span style="color:#666">-cle</span> <span style="color:#b44">&#34;Z&#34;</span>) {<span style="color:#b8860b">$Chars</span> += <span style="color:#b8860b">$TokenSet</span> | <span style="color:#a2f">Get-Random</span>}    <span style="color:#080;font-style:italic">#Character sets defined in uppercase are mandatory</span>
+        <span style="color:#b8860b">$AllTokens</span> += <span style="color:#b8860b">$TokenSet</span>
+    }
+    <span style="color:#a2f;font-weight:bold">While</span> (<span style="color:#b8860b">$Chars</span>.Count <span style="color:#666">-lt</span> <span style="color:#b8860b">$Size</span>) {<span style="color:#b8860b">$Chars</span> += <span style="color:#b8860b">$AllTokens</span> | <span style="color:#a2f">Get-Random</span>}
+    (<span style="color:#b8860b">$Chars</span> | <span style="color:#a2f">Sort-Object</span> {<span style="color:#a2f">Get-Random</span>}) -Join <span style="color:#b44">&#34;&#34;</span>                <span style="color:#080;font-style:italic">#Mix the (mandatory) characters and output string</span>
+}; <span style="color:#a2f">Set-Alias</span> Create-Password Create-String -Description <span style="color:#b44">&#34;Generate a random string (password)&#34;</span>
+</code></pre></div><h3 id="syntax">Syntax</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">Create-String  [[-Size]  &lt;int&gt;]  [[-Complexity]  &lt;[U|u]|[L|l]|[N|n]|[S|s]&gt;]  [[-Exclude]  &lt;char[]&gt;]
+</code></pre></div><h3 id="parameters">Parameters</h3>
+<p><strong><code>[[-Size] &lt;int&gt;]</code></strong><br>
+The size of the password.</p>
+<p><strong><code>[[-Complexity] &lt;[U|u]|[L|l]|[N|n]|[S|s]&gt;]</code></strong><br>
+The complexity of the password where the characters <code>U</code>, <code>L</code>, <code>N</code> and <code>S</code> refer to the character sets: Uppercase, Lowercase, Numerals and Symbols. If supplied in lowercase (<code>u</code>, <code>l</code>, <code>n</code> or <code>s</code>) the returned password <strong>might</strong> contain any of character in the concerned character set, If supplied in uppercase (<code>U</code>, <code>L</code>, <code>N</code> or <code>S</code>) the returned string <strong>will</strong> contain at least one of the characters in the concerned character set.</p>
+<p><strong><code>[[-Exclude] &lt;char[]&gt;]</code></strong><br>
+A list with unwanted characters to exclude from the password.</p>
+<h3 id="examples"><strong>Examples</strong></h3>
+<p>To create a password with a length of 8 characters that might contain any uppercase characters, lowercase characters and numbers:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">Create-String 8  uln
+</code></pre></div><p>To create a password with a length of 12 characters that that contains at least one uppercase character, one lowercase character, one number and one symbol and does not contain the characters  <code>O</code>,  <code>L</code>,  <code>I</code>,  <code>o</code>,  <code>l</code>,  <code>i</code>,  <code>0</code>  or  <code>1</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">Create-String 12  ULNS  <span style="color:#b44">&#34;OLIoli01&#34;</span>
+</code></pre></div><p>The <a href="https://stackoverflow.com/a/37275209/1701026"><code>Create-Password</code></a> cmdlet was originally published at <a href="https://stackoverflow.com/a/37275209/1701026">StackOverflow</a></p>
+<div class="edit-meta">
+Last updated on 29 Jun 2020
+
+
+<br>
+Published on 6 Nov 2017
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://powersnippets.com/convertto-flatobject/" title="ConvertTo-FlatObject"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - ConvertTo-FlatObject</a>
+<a class="nav nav-next" href="https://powersnippets.com/inline-if-iif/" title="Inline (IIf)">Next - Inline (IIf) <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer>
+</footer>
+</main><div class="sidebar">
+
+<nav class="slide-menu">
+<ul>
+<li class=""><a href="https://powersnippets.com/">Home</a></li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertfrom-sourcetable/">ConvertFrom-SourceTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-datatable/">ConvertTo-DataTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-datatable/readme/">Read Me</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-expression/">ConvertTo-Expression<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-expression/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertto-expression/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/convertto-flatobject/">ConvertTo-FlatObject</a>
+  
+</li>
+
+<li class="parent active"><a href="https://powersnippets.com/create-string/">Create-String</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/inline-if-iif/">Inline (IIf)</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/invoke-comobject/">Invoke-ComObject</a>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/join-object/">Join-Object<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/join-object/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/join-object/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/merge-hashtable/">Merge-Hashtable</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/set-formcontrol/">Set-FormControl</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/union-object/">Union-Object</a>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"><h2>WhoAmI</h2>
+<p>
+<img align="left" src="/images/WhoAmI.jpg" alt width="74" height="96" />
+My name is Ronald Bode.<br />
+I am a Windows engineer and developer.
+</p>
+<p>
+Code writing is my hobby and I love riddles. Currently I am most active with PowerShell programming, RPA (UiPath) and creating webpages.
+</p>
+<a href="https://www.linkedin.com/in/ronald-bode-4a1156124/"><img src="/images/icons/linkedin.png" width="16" />LinkedIn</a>
+<a href="https://stackoverflow.com/users/1701026/iron/"><img src="/images/icons/stackoverflow.png" width="16" />StackOverflow</a>
+<a href="https://github.com/iRon7/"><img src="/images/icons/github.png" width="16" />GitHub</a></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

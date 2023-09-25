@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ConvertTo-FlatObject - Power$nippets</title>
+<meta name="description" content="Boost your shell with reusable code stripped to its essentials">
+<meta name="generator" content="Hugo 0.72.0" />
+<link rel="shortcut icon" href="/images/favicons/favicon.ico">
+<link href="https://powersnippets.com//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://powersnippets.com/convertto-flatobject/">
+<link rel="stylesheet" href="https://powersnippets.com/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://powersnippets.com/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://powersnippets.com/js/bundle.js"></script>
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet">
+<style>
+:root {--custom-font-color: #f4f4f4;--custom-background-color: #012345;}
+</style>
+<meta property="og:title" content="ConvertTo-FlatObject" />
+<meta property="og:description" content="Boost your shell with reusable code stripped to its essentials" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://powersnippets.com/convertto-flatobject/" />
+<meta property="og:updated_time" content="2020-06-29T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="ConvertTo-FlatObject"/>
+<meta name="twitter:description" content="Boost your shell with reusable code stripped to its essentials"/>
+<meta itemprop="name" content="ConvertTo-FlatObject">
+<meta itemprop="description" content="Boost your shell with reusable code stripped to its essentials">
+<link href="https://powersnippets.com/css/custom.css" rel="stylesheet"></head>
+<body><div class="container"><header>
+<h1>Power$nippets</h1>
+
+<p class="description">Boost your shell with reusable code stripped to its essentials</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>ConvertTo-FlatObject</h1><p>Some cmdlets, like  <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/export-csv?view=powershell-5.1"><code>Export-Csv</code></a> and  <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/convertto-csv?view=powershell-5.1"><code>ConvertTo-Csv</code></a> (described as: “<em>Converts objects into a series of comma-separated value (CSV) variable-length strings.</em>“) expect flat file as input. Meaning, if you supply any complex object like an embedded array, hash table or object, it will output nothing more than:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">PS </span>C:\&gt; <span style="color:#800">[PSCustomObject]</span>@{
+    Array = @(<span style="color:#b44">&#34;a&#34;</span>, <span style="color:#b44">&#34;b&#34;</span>)
+    Hashtable = @{a = <span style="color:#b44">&#34;b&#34;</span>}
+    PSCustomObject = (<span style="color:#800">[PSCustomObject]</span>@{a = <span style="color:#b44">&#34;b&#34;</span>})
+    <span style="color:#a2f;font-weight:bold">Process</span> = (<span style="color:#a2f">Get-Process</span> | <span style="color:#a2f">Select </span>-First 1)
+} | <span style="color:#a2f">ConvertTo-Csv</span> -NoTypeInfo
+<span style="color:#b44">&#34;Array&#34;</span>,<span style="color:#b44">&#34;Hashtable&#34;</span>,<span style="color:#b44">&#34;PSCustomObject&#34;</span>,<span style="color:#b44">&#34;Process&#34;</span>
+<span style="color:#b44">&#34;System.Object[]&#34;</span>,<span style="color:#b44">&#34;System.Collections.Hashtable&#34;</span>,<span style="color:#b44">&#34;@{a=b}&#34;</span>,<span style="color:#b44">&#34;System.Diagnostics.Process (ApplicationFrameHost)&#34;</span>
+</code></pre></div><p>Which is is quiet useless and probably not what you expect. Something similar will also happen if you group objects (using  <a href="https://docs.microsoft.com/powershell/module/microsoft.powershell.utility/group-object?view=powershell-5.1"><code>Group-Object</code></a>) as the group properties are embedded in a deeper Group object.</p>
+<p>This cmdlet might help to resolve this as it recursively flattens every property of any embedded array, hash table or object to property at root of the object.</p>
+<h3 id="cmdlet">Cmdlet</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f;font-weight:bold">Function</span> Flatten <span style="color:#a2f">ConvertTo-FlatObject</span> {										<span style="color:#080;font-style:italic"># https://powersnippets.com/flatten-object/</span>
+	[<span style="color:#a2f;font-weight:bold">CmdletBinding</span>()]<span style="color:#a2f;font-weight:bold">Param</span> (									<span style="color:#080;font-style:italic"># Version 02.00.16, by iRon</span>
+		[<span style="color:#a2f;font-weight:bold">Parameter</span>(<span style="color:#a2f;font-weight:bold">ValueFromPipeLine</span> = <span style="color:#b8860b">$True</span>)]<span style="color:#800">[Object[]]</span><span style="color:#b8860b">$Objects</span>,
+		<span style="color:#800">[String]</span><span style="color:#b8860b">$Separator</span> = <span style="color:#b44">&#34;.&#34;</span>, [<span style="color:#a2f;font-weight:bold">ValidateSet</span>(<span style="color:#b44">&#34;&#34;</span>, 0, 1)]<span style="color:#b8860b">$Base</span> = 1, <span style="color:#800">[Int]</span><span style="color:#b8860b">$Depth</span> = 5, <span style="color:#800">[Int]</span><span style="color:#b8860b">$Uncut</span> = 1,
+		<span style="color:#800">[String[]]</span><span style="color:#b8860b">$ToString</span> = (<span style="color:#800">[String], [DateTime], [TimeSpan], [Version], [Enum]</span>), <span style="color:#800">[String[]]</span><span style="color:#b8860b">$Path</span> = @()
+	)
+	<span style="color:#b8860b">$PipeLine</span> = <span style="color:#b8860b">$Input</span> | <span style="color:#a2f;font-weight:bold">ForEach</span> {<span style="color:#b8860b">$_</span>}; <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$PipeLine</span>) {<span style="color:#b8860b">$Objects</span> = <span style="color:#b8860b">$PipeLine</span>}
+	<span style="color:#a2f;font-weight:bold">If</span> (@(<span style="color:#a2f">Get-PSCallStack</span>)[1].Command <span style="color:#666">-eq</span> <span style="color:#b8860b">$MyInvocation</span>.MyCommand.Name <span style="color:#666">-or</span> @(<span style="color:#a2f">Get-PSCallStack</span>)[1].Command <span style="color:#666">-eq</span> <span style="color:#b44">&#34;&lt;position&gt;&#34;</span>) {
+		<span style="color:#b8860b">$Object</span> = @(<span style="color:#b8860b">$Objects</span>)[0]; <span style="color:#b8860b">$Iterate</span> = <span style="color:#a2f">New-Object</span> System.Collections.Specialized.OrderedDictionary
+		<span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$ToString</span> | <span style="color:#a2f">Where </span>{<span style="color:#b8860b">$Object</span> <span style="color:#666">-is</span> <span style="color:#b8860b">$_</span>}) {<span style="color:#b8860b">$Object</span> = <span style="color:#b8860b">$Object</span>.ToString()}
+		<span style="color:#a2f;font-weight:bold">ElseIf</span> (<span style="color:#b8860b">$Depth</span>) {<span style="color:#b8860b">$Depth</span>--
+			<span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Object</span>.GetEnumerator.OverloadDefinitions <span style="color:#666">-match</span> <span style="color:#b44">&#34;[\W]IDictionaryEnumerator[\W]&#34;</span>) {
+				<span style="color:#b8860b">$Iterate</span> = <span style="color:#b8860b">$Object</span>
+			} <span style="color:#a2f;font-weight:bold">ElseIf</span> (<span style="color:#b8860b">$Object</span>.GetEnumerator.OverloadDefinitions <span style="color:#666">-match</span> <span style="color:#b44">&#34;[\W]IEnumerator[\W]&#34;</span>) {
+				<span style="color:#b8860b">$Object</span>.GetEnumerator() | <span style="color:#a2f;font-weight:bold">ForEach</span> -Begin {<span style="color:#b8860b">$i</span> = <span style="color:#b8860b">$Base</span>} {<span style="color:#b8860b">$Iterate</span>.(<span style="color:#b8860b">$i</span>) = <span style="color:#b8860b">$_</span>; <span style="color:#b8860b">$i</span> += 1}
+			} <span style="color:#a2f;font-weight:bold">Else</span> {
+				<span style="color:#b8860b">$Names</span> = <span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Uncut</span>) {<span style="color:#b8860b">$Uncut</span>--} <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$Object</span>.PSStandardMembers.DefaultDisplayPropertySet.ReferencedPropertyNames}
+				<span style="color:#a2f;font-weight:bold">If</span> (!<span style="color:#b8860b">$Names</span>) {<span style="color:#b8860b">$Names</span> = <span style="color:#b8860b">$Object</span>.PSObject.Properties | <span style="color:#a2f">Where </span>{<span style="color:#b8860b">$_</span>.IsGettable} | <span style="color:#a2f">Select </span>-Expand Name}
+				<span style="color:#a2f;font-weight:bold">If</span> (<span style="color:#b8860b">$Names</span>) {<span style="color:#b8860b">$Names</span> | <span style="color:#a2f;font-weight:bold">ForEach</span> {<span style="color:#b8860b">$Iterate</span>.<span style="color:#b8860b">$_</span> = <span style="color:#b8860b">$Object</span>.<span style="color:#b8860b">$_</span>}}
+			}
+		}
+		<span style="color:#a2f;font-weight:bold">If</span> (@(<span style="color:#b8860b">$Iterate</span>.Keys).Count) {
+			<span style="color:#b8860b">$Iterate</span>.Keys | <span style="color:#a2f;font-weight:bold">ForEach</span> {
+				Flatten-Object @(,<span style="color:#b8860b">$Iterate</span>.<span style="color:#b8860b">$_</span>) <span style="color:#b8860b">$Separator</span> <span style="color:#b8860b">$Base</span> <span style="color:#b8860b">$Depth</span> <span style="color:#b8860b">$Uncut</span> <span style="color:#b8860b">$ToString</span> (<span style="color:#b8860b">$Path</span> + <span style="color:#b8860b">$_</span>)
+			}
+		}  <span style="color:#a2f;font-weight:bold">Else</span> {<span style="color:#b8860b">$Property</span>.((<span style="color:#b8860b">$Path</span> | <span style="color:#a2f">Where </span>{<span style="color:#b8860b">$_</span>}) -Join <span style="color:#b8860b">$Separator</span>) = <span style="color:#b8860b">$Object</span>}
+	} <span style="color:#a2f;font-weight:bold">ElseIf</span> (<span style="color:#b8860b">$Objects</span> <span style="color:#666">-ne</span> <span style="color:#b8860b">$Null</span>) {
+		@(<span style="color:#b8860b">$Objects</span>) | <span style="color:#a2f;font-weight:bold">ForEach</span> -Begin {<span style="color:#b8860b">$Output</span> = @(); <span style="color:#b8860b">$Names</span> = @()} {
+			<span style="color:#a2f">New-Variable</span> -Force -Option AllScope -Name Property -Value (<span style="color:#a2f">New-Object</span> System.Collections.Specialized.OrderedDictionary)
+			Flatten-Object @(,<span style="color:#b8860b">$_</span>) <span style="color:#b8860b">$Separator</span> <span style="color:#b8860b">$Base</span> <span style="color:#b8860b">$Depth</span> <span style="color:#b8860b">$Uncut</span> <span style="color:#b8860b">$ToString</span> <span style="color:#b8860b">$Path</span>
+			<span style="color:#b8860b">$Output</span> += <span style="color:#a2f">New-Object</span> PSObject -Property <span style="color:#b8860b">$Property</span>
+			<span style="color:#b8860b">$Names</span> += <span style="color:#b8860b">$Output</span>[-1].PSObject.Properties | <span style="color:#a2f">Select </span>-Expand Name
+		}
+		<span style="color:#b8860b">$Output</span> | <span style="color:#a2f">Select </span>(<span style="color:#800">[String[]]</span>(<span style="color:#b8860b">$Names</span> | <span style="color:#a2f">Select </span>-Unique))
+	}
+}; <span style="color:#a2f">Set-Alias</span> Flatten <span style="color:#a2f">ConvertTo-FlatObject</span>
+</code></pre></div><h3 id="syntax">Syntax</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">&lt;Object[]&gt;  Flatten-Object  [-Separator  &lt;String&gt;]  [-Base  <span style="color:#b44">&#34;&#34;</span>  |  0  |  1]  [-Depth  &lt;Int&gt;]  [-Uncut&lt;Int&gt;]  [ToString  &lt;Type[]&gt;]
+</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">Flatten-Object  &lt;Object[]&gt;  [[-Separator]  &lt;String&gt;]  [[-Base]  <span style="color:#b44">&#34;&#34;</span>  |  0  |  1]  [[-Depth]  &lt;Int&gt;]  [[-Uncut]  &lt;Int&gt;]  <span style="color:#800">[[ToString]</span>  &lt;Type[]&gt;]
+</code></pre></div><h3 id="parameters">Parameters</h3>
+<p><strong><code>-Object[] &lt;Object[]&gt;</code></strong><br>
+The object (or objects) to be flatten.</p>
+<p><strong><code>-Separator &lt;String&gt;</code></strong>  (default:  <code>.</code>)<br>
+The separator used between the recursive property names. .</p>
+<p><strong><code>-Depth &lt;Int&gt;</code></strong>  (default:  <code>5</code>)<br>
+The maximal depth of flattening a recursive property. Any negative value will result in an unlimited depth and could cause a infinitive loop.</p>
+<p><strong><code>-Uncut &lt;Int&gt;</code></strong>  (default:  <code>1</code>)<br>
+The number of object iterations that will left uncut. Further object properties will be limited to just the  <code>DefaultDisplayPropertySet</code>. Any negative value will reveal all properties of all objects.</p>
+<p><strong><code>-Base &quot;&quot; | 0 | 1</code></strong>  (default:  <code>1</code>)<br>
+The first index name of an embedded array:</p>
+<ul>
+<li><code>1</code>, arrays will be 1 based:  <code>&lt;Parent&gt;.1</code>,  <code>&lt;Parent&gt;.2</code>,  <code>&lt;Parent&gt;.3</code>, …</li>
+<li><code>0</code>, arrays will be 0 based:  <code>&lt;Parent&gt;.0</code>,  <code>&lt;Parent&gt;.1</code>,  <code>&lt;Parent&gt;.2</code>, …</li>
+<li><code>&quot;&quot;</code>, the first item in an array will be unnamed and than followed with 1:  <code>&lt;Parent&gt;</code>,  <code>&lt;Parent&gt;.1</code>,  <code>&lt;Parent&gt;.2</code>, …</li>
+</ul>
+<p><strong><code>-ToString &lt;Type[]= [String], [DateTime], [TimeSpan]&gt;</code></strong> (default:  <code>[String], [DateTime], [TimeSpan]</code>)
+A list of value types that will be converted to string rather the further flattened. E.g. a  <code>[DateTime]</code>  could be flattened with additional properties like  <code>Date</code>,  <code>Day</code>,  <code>DayOfWeek</code>, etc. but will be converted to a single (String) property instead.</p>
+<blockquote>
+<p>The parameter  <code>-Path</code>  is for internal use but could but used to prefix property names.</p>
+</blockquote>
+<h3 id="examples">Examples</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">PS </span>C:\&gt; <span style="color:#a2f">New-Object</span> PSObject @{
+    String    = <span style="color:#800">[String]</span><span style="color:#b44">&#34;Text&#34;</span>
+    Char      = <span style="color:#800">[Char]</span>65
+    Byte      = <span style="color:#800">[Byte]</span>66
+    Int       = <span style="color:#800">[Int]</span>67
+    Long      = <span style="color:#800">[Long]</span>68
+    Null      = <span style="color:#b8860b">$Null</span>
+    Booleans  = <span style="color:#b8860b">$False</span>, <span style="color:#b8860b">$True</span>
+    Decimal   = <span style="color:#800">[Decimal]</span>69
+    Single    = <span style="color:#800">[Single]</span>70
+    Double    = <span style="color:#800">[Double]</span>71
+    Array     = @(<span style="color:#b44">&#34;One&#34;</span>, <span style="color:#b44">&#34;Two&#34;</span>, @(<span style="color:#b44">&#34;Three&#34;</span>, <span style="color:#b44">&#34;Four&#34;</span>), <span style="color:#b44">&#34;Five&#34;</span>)
+    HashTable = @{city=<span style="color:#b44">&#34;New York&#34;</span>; currency=<span style="color:#b44">&#34;Dollar&#34;</span>; postalCode=10021; Etc = @(<span style="color:#b44">&#34;Three&#34;</span>, <span style="color:#b44">&#34;Four&#34;</span>, <span style="color:#b44">&#34;Five&#34;</span>)}
+    Object    = <span style="color:#a2f">New-Object</span> PSObject -Property @{Name = <span style="color:#b44">&#34;One&#34;</span>;   Value = 1; Text = @(<span style="color:#b44">&#34;First&#34;</span>, <span style="color:#b44">&#34;1st&#34;</span>)}
+} | Flatten
+ 
+ 
+Double               <span style="">:</span> 71
+Decimal              <span style="">:</span> 69
+Long                 <span style="">:</span> 68
+Array.1              <span style="">:</span> One
+Array.2              <span style="">:</span> Two
+Array.3.1            <span style="">:</span> Three
+Array.3.2            <span style="">:</span> Four
+Array.4              <span style="">:</span> Five
+Object.Name          <span style="">:</span> One
+Object.Value         <span style="">:</span> 1
+Object.Text.1        <span style="">:</span> First
+Object.Text.2        <span style="">:</span> 1st
+Int                  <span style="">:</span> 67
+Byte                 <span style="">:</span> 66
+HashTable.postalCode <span style="">:</span> 10021
+HashTable.currency   <span style="">:</span> Dollar
+HashTable.Etc.1      <span style="">:</span> Three
+HashTable.Etc.2      <span style="">:</span> Four
+HashTable.Etc.3      <span style="">:</span> Five
+HashTable.city       <span style="">:</span> New York
+Booleans.1           <span style="">:</span> False
+Booleans.2           <span style="">:</span> True
+String               <span style="">:</span> Text
+Char                 <span style="">:</span> A
+Single               <span style="">:</span> 70
+Null                 <span style="">:</span>
+</code></pre></div><p>Flatten grouped objects:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$csv</span>  |  <span style="color:#a2f">Group </span>Name  |  Flatten  |  <span style="color:#a2f">Format-Table</span>  <span style="color:#080;font-style:italic"># https://stackoverflow.com/a/47409634/1701026</span>
+</code></pre></div><p>Flatten common objects:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#b8860b">$MyInvocation</span>  |  Flatten-Object
+</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">Get-Process</span> |  <span style="color:#a2f">Select </span> -First  1  |  Flatten-Object
+</code></pre></div><p>Or a list (array) of system objects:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">Get-Service</span>  |  Flatten-Object  -Depth  3  |  <span style="color:#a2f">Export-CSV</span> Service.csv
+</code></pre></div><blockquote>
+<p>Note that a command as below could take hours to complete:</p>
+</blockquote>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#a2f">Get-Process</span>  |  Flatten-Object  |  <span style="color:#a2f">Export-CSV</span> <span style="color:#a2f;font-weight:bold">Process</span>.csv
+</code></pre></div><p><em>Why?</em>  because it results in a table with a few hundred rows and several thousand columns. So if you if would like to use this for flatting process, you beter limit the number of rows (using the  <code>Where-Object</code>  cmdlet) or the number of columns (using the  <code>Select-Object</code>  cmdlet).</p>
+<p>The <a href="https://stackoverflow.com/a/46081131/1701026"><code>Flatten-Object</code></a> cmdlet was originally published at <a href="https://stackoverflow.com/a/24854277/1701026">StackOverflow</a></p>
+<div class="edit-meta">
+Last updated on 29 Jun 2020
+
+
+<br>
+Published on 6 Nov 2017
+<br></div><nav class="pagination"><a class="nav nav-prev" href="https://powersnippets.com/convertto-expression/source/" title="Source &amp; download"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Source &amp; download</a>
+<a class="nav nav-next" href="https://powersnippets.com/create-string/" title="Create-String">Next - Create-String <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer>
+</footer>
+</main><div class="sidebar">
+
+<nav class="slide-menu">
+<ul>
+<li class=""><a href="https://powersnippets.com/">Home</a></li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertfrom-sourcetable/">ConvertFrom-SourceTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertfrom-sourcetable/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-datatable/">ConvertTo-DataTable<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-datatable/readme/">Read Me</a></li>
+</ul>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/convertto-expression/">ConvertTo-Expression<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/convertto-expression/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/convertto-expression/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class="parent active"><a href="https://powersnippets.com/convertto-flatobject/">ConvertTo-FlatObject</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/create-string/">Create-String</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/inline-if-iif/">Inline (IIf)</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/invoke-comobject/">Invoke-ComObject</a>
+  
+</li>
+
+<li class=" has-sub-menu"><a href="https://powersnippets.com/join-object/">Join-Object<span class="mark closed">+</span></a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://powersnippets.com/join-object/readme/">Read Me</a></li>
+<li class=""><a href="https://powersnippets.com/join-object/source/">Source &amp; download</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/merge-hashtable/">Merge-Hashtable</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/set-formcontrol/">Set-FormControl</a>
+  
+</li>
+
+<li class=""><a href="https://powersnippets.com/union-object/">Union-Object</a>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"><h2>WhoAmI</h2>
+<p>
+<img align="left" src="/images/WhoAmI.jpg" alt width="74" height="96" />
+My name is Ronald Bode.<br />
+I am a Windows engineer and developer.
+</p>
+<p>
+Code writing is my hobby and I love riddles. Currently I am most active with PowerShell programming, RPA (UiPath) and creating webpages.
+</p>
+<a href="https://www.linkedin.com/in/ronald-bode-4a1156124/"><img src="/images/icons/linkedin.png" width="16" />LinkedIn</a>
+<a href="https://stackoverflow.com/users/1701026/iron/"><img src="/images/icons/stackoverflow.png" width="16" />StackOverflow</a>
+<a href="https://github.com/iRon7/"><img src="/images/icons/github.png" width="16" />GitHub</a></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

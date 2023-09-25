@@ -1,0 +1,93 @@
+:root {
+  font-size: 100%;
+  line-height: 1.5em;
+}
+
+html {
+    --custom-font-family-base: segoe-ui_normal,Segoe UI,Segoe,Segoe WP,Helvetica Neue,Helvetica,sans-serif;
+    --custom-font-family-headings: 'PT Serif', Tahoma, Verdana, Segoe, sans-serif;
+}
+
+h1,h2,h3,h4,h5,h6 {
+    color: #012345;
+    font-weight: 500;
+}
+
+header {
+    padding: 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-flow: column nowrap;
+            flex-flow: column nowrap;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+}
+
+header h1 {
+    line-height: 1.2em;
+    color: #f4f4f4;
+    font-size: 10vw;
+    font-weight: bold;
+}
+
+header p {
+    line-height: 2em;
+}
+
+@media screen and (min-width: 480px) {
+    header h1 {
+        color: #f4f4f4;
+        -webkit-text-stroke-width: 1px;
+        -webkit-text-stroke-color: #f4f4f4;
+        -webkit-text-fill-color: transparent;
+            background: -webkit-linear-gradient(transparent, transparent), url(/images/code.png) repeat;
+            background: -o-linear-gradient(transparent, transparent);
+        -webkit-background-clip: text;
+    }
+    main {
+        -webkit-box-flex: 0;
+          -ms-flex: 0 0 calc(95% - 160px);
+              flex: 0 0 calc(95% - 160px);
+        max-width: calc(95% - 160px);
+    }
+}
+
+.description {
+    font-size: 2vw;
+}
+
+@media screen and (min-width: 480px) {
+    .sidebar {
+        max-width: 240px;
+    }
+}
+
+.sidebar-footer p {
+    margin-bottom: .5em;
+}
+
+.sidebar-footer img {
+    margin-right: 4px;
+}
+
+.sidebar-footer a:focus, a:active, a:hover {
+    color: var(--custom-link-text-hover-color, #38a0e4);
+    text-decoration: underline;
+}
+
+main {
+  padding: 5%;
+}
+
+code {
+    overflow-x: scroll;
+    white-space: pre;
+}
+
+blockquote {
+    color: #012345;
+}
