@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ConvertTo-DataTable on Power$nippets</title>
-    <link>https://powersnippets.com/convertto-datatable/</link>
+    <link>https://iron7.github.io/convertto-datatable/</link>
     <description>Recent content in ConvertTo-DataTable on Power$nippets</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 06 Nov 2017 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://powersnippets.com/convertto-datatable/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://iron7.github.io/convertto-datatable/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Read Me</title>
-      <link>https://powersnippets.com/convertto-datatable/readme/</link>
+      <link>https://iron7.github.io/convertto-datatable/readme/</link>
       <pubDate>Mon, 06 Nov 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://powersnippets.com/convertto-datatable/readme/</guid>
+      <guid>https://iron7.github.io/convertto-datatable/readme/</guid>
       <description>ConvertTo-DataTable Convert an object (list) to a data table.
 Syntax &amp;lt;Object&amp;gt; | ConvertTo-DataTable [-ColumnType] &amp;lt;HashTable&amp;gt; Parameters [-Object] &amp;lt;Object&amp;gt;
 The object(s) to be converted to a DataTable.

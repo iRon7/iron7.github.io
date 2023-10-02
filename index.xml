@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Introduction on Power$nippets</title>
-    <link>https://powersnippets.com/</link>
+    <link>https://iron7.github.io/</link>
     <description>Recent content in Introduction on Power$nippets</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 06 Jun 2020 14:28:00 +0200</lastBuildDate>
     
-	<atom:link href="https://powersnippets.com/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://iron7.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Read Me</title>
-      <link>https://powersnippets.com/convertfrom-sourcetable/readme/</link>
+      <link>https://iron7.github.io/convertfrom-sourcetable/readme/</link>
       <pubDate>Mon, 06 Nov 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://powersnippets.com/convertfrom-sourcetable/readme/</guid>
+      <guid>https://iron7.github.io/convertfrom-sourcetable/readme/</guid>
       <description>ConvertFrom-SourceTable Converts a fixed column table to objects.
 The ConvertFrom-SourceTable cmdlet creates objects from a fixed column source table (format-table) possibly surrounded by horizontal and/or vertical rulers. The ConvertFrom-SourceTable cmdlet supports most data types using the following formatting and alignment rules:
 Data that is left aligned will be parsed to the generic column type which is a string by default.
@@ -26,10 +26,10 @@ Data that is justified (using the full column with) is following the the header 
     
     <item>
       <title>Read Me</title>
-      <link>https://powersnippets.com/convertto-datatable/readme/</link>
+      <link>https://iron7.github.io/convertto-datatable/readme/</link>
       <pubDate>Mon, 06 Nov 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://powersnippets.com/convertto-datatable/readme/</guid>
+      <guid>https://iron7.github.io/convertto-datatable/readme/</guid>
       <description>ConvertTo-DataTable Convert an object (list) to a data table.
 Syntax &amp;lt;Object&amp;gt; | ConvertTo-DataTable [-ColumnType] &amp;lt;HashTable&amp;gt; Parameters [-Object] &amp;lt;Object&amp;gt;
 The object(s) to be converted to a DataTable.
@@ -41,10 +41,10 @@ $MyObject = @( New-Object PSCustomObject -Property @{Name = &amp;#34;a&amp;#34;;
     
     <item>
       <title>Read Me</title>
-      <link>https://powersnippets.com/convertto-expression/readme/</link>
+      <link>https://iron7.github.io/convertto-expression/readme/</link>
       <pubDate>Mon, 06 Nov 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://powersnippets.com/convertto-expression/readme/</guid>
+      <guid>https://iron7.github.io/convertto-expression/readme/</guid>
       <description>ConvertTo-Expression Serializes an object to a PowerShell expression
 The ConvertTo-Expression cmdlet converts (serializes) an object to a PowerShell expression. The object can be stored in a variable, file or any other common storage for later use or to be ported to another system.
 Converting back from an expression An expression can be restored to an object using the native Invoke-Expression cmdlet:
@@ -53,38 +53,38 @@ $Object = Invoke-Expression ($Object | ConverTo-Expression) Or Converting it to 
     
     <item>
       <title>Read Me</title>
-      <link>https://powersnippets.com/join-object/readme/</link>
+      <link>https://iron7.github.io/join-object/readme/</link>
       <pubDate>Mon, 06 Nov 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://powersnippets.com/join-object/readme/</guid>
+      <guid>https://iron7.github.io/join-object/readme/</guid>
       <description>Join-Object Combines two object lists based on a related property between them.
 Combines properties from one or more objects. It creates a set that can be saved as a new object or used as it is. An object join is a means for combining properties from one (self-join) or more tables by using values common to each. The Join-Object cmdlet supports a few proxy commands with their own (-JoinType and -Property) defaults:</description>
     </item>
     
     <item>
       <title>Source &amp; download</title>
-      <link>https://powersnippets.com/convertfrom-sourcetable/source/</link>
+      <link>https://iron7.github.io/convertfrom-sourcetable/source/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://powersnippets.com/convertfrom-sourcetable/source/</guid>
+      <guid>https://iron7.github.io/convertfrom-sourcetable/source/</guid>
       <description>The ConvertFrom-SourceTable script can be installed from the PowerShell Gallery:Install-Script -Name ConvertFrom-SourceTable As it concerns a standalone script, installation isn&#39;t really required.If you don&#39;t have administrator rights, you might just download the script (or copy it) to the required location.You might than simply invoke the script using PowerShell dot sourcing:. .\ConvertFrom-SourceTable.ps1 For source code versions, testers history etc., see the ConvertFrom-SourceTable project site on GitHub.</description>
     </item>
     
     <item>
       <title>Source &amp; download</title>
-      <link>https://powersnippets.com/convertto-expression/source/</link>
+      <link>https://iron7.github.io/convertto-expression/source/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://powersnippets.com/convertto-expression/source/</guid>
+      <guid>https://iron7.github.io/convertto-expression/source/</guid>
       <description>The ConvertTo-Expression script can be installed from the PowerShell Gallery:Install-Script -Name ConvertTo-Expression As it concerns a standalone script, installation isn&#39;t really required.If you don&#39;t have administrator rights, you might just download the script (or copy it) to the required location.You might than simply invoke the script using PowerShell dot sourcing:. .\ConvertTo-Expression.ps1 For source code versions, testers history etc., see the ConvertTo-Expression project site on GitHub.</description>
     </item>
     
     <item>
       <title>Source &amp; download</title>
-      <link>https://powersnippets.com/join-object/source/</link>
+      <link>https://iron7.github.io/join-object/source/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://powersnippets.com/join-object/source/</guid>
+      <guid>https://iron7.github.io/join-object/source/</guid>
       <description>The Join-Object (Join.ps1)script can be installed from the PowerShell Gallery:Install-Script -Name Join As it concerns a standalone script, installation isn&#39;t really required.If you don&#39;t have administrator rights, you might just download the script (or copy it) to the required location.You might than simply invoke the script using PowerShell dot sourcing:. .\Join.ps1 For source code versions, testers history etc., see the Join-Object project site on GitHub.</description>
     </item>
     
